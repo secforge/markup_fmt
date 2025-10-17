@@ -38,6 +38,7 @@ pub struct Parser<'s> {
 #[derive(Default)]
 struct ParserState {
     has_front_matter: bool,
+    element_depth: usize,
 }
 
 impl<'s> Parser<'s> {
@@ -1074,11 +1075,18 @@ impl<'s> Parser<'s> {
         }
 
         let mut children = vec![];
+        let is_vue_custom_block = self.language == Language::Vue
+            && self.state.element_depth == 0
+            && !tag_name.eq_ignore_ascii_case("template")
+            && !tag_name.eq_ignore_ascii_case("script")
+            && !tag_name.eq_ignore_ascii_case("style");
+
         let should_parse_raw = self.language != Language::Xml
             && (tag_name.eq_ignore_ascii_case("script")
                 || tag_name.eq_ignore_ascii_case("style")
                 || tag_name.eq_ignore_ascii_case("pre")
-                || tag_name.eq_ignore_ascii_case("textarea"));
+                || tag_name.eq_ignore_ascii_case("textarea")
+                || is_vue_custom_block);
         if should_parse_raw {
             let text_node = self.parse_raw_text_node(tag_name)?;
             let raw = text_node.raw;
@@ -1088,6 +1096,9 @@ impl<'s> Parser<'s> {
                     raw,
                 });
             }
+        } else {
+            // Increment depth when parsing children
+            self.state.element_depth += 1;
         }
 
         loop {
@@ -1145,6 +1156,11 @@ impl<'s> Parser<'s> {
                     }));
                 }
             }
+        }
+
+        // Decrement depth after parsing children (if we incremented it)
+        if !should_parse_raw {
+            self.state.element_depth -= 1;
         }
 
         Ok(Element {
