@@ -124,16 +124,16 @@ In your configuration file, you can specify per-block rules under `vue.custom_bl
 }
 ```
 
-Or in TOML/dprint format (using camelCase, recommended for dprint):
+Or in TOML/dprint format (using vue.customBlock):
 
 ```toml
-vueCustomBlock = "langAttribute"
-"vueCustomBlock.i18n" = "langAttribute"
-"vueCustomBlock.docs" = "none"
-"vueCustomBlock.unknownBlock" = "squash"
+"vue.customBlock" = "langAttribute"
+"vue.customBlock.i18n" = "langAttribute"
+"vue.customBlock.docs" = "none"
+"vue.customBlock.unknownBlock" = "squash"
 ```
 
-Or using the struct format:
+Or using the struct format (non-dprint):
 
 ```toml
 [vue.custom_block]
@@ -143,21 +143,21 @@ docs = "none"
 unknown-block = "squash"
 ```
 
-The `default` field (or the base `vueCustomBlock` key) sets the default formatting mode for all custom blocks not explicitly configured. Then, each custom block type can override this default.
+The `default` field (or the base `vue.customBlock` key in dprint) sets the default formatting mode for all custom blocks not explicitly configured. Then, each custom block type can override this default.
 
 ### Simplified Format
 
 If you only need to set the default mode without any per-block overrides, you can use a simplified string format.
 
-For dprint (camelCase recommended):
+For dprint:
 
 ```json
 {
-  "vueCustomBlock": "langAttribute"
+  "vue.customBlock": "langAttribute"
 }
 ```
 
-Or in JSON/library contexts:
+For JSON/library contexts:
 
 ```json
 {
@@ -182,15 +182,12 @@ This is equivalent to:
 ```json
 {
   "markup": {
-    "vueCustomBlock.i18n": "none"
+    "vue.customBlock.i18n": "none"
   }
 }
 ```
 
-This works in dprint because it uses a different configuration parser. All three naming conventions work in dprint:
-- `vueCustomBlock` / `vueCustomBlock.i18n` (recommended)
-- `vue.customBlock` / `vue.customBlock.i18n`
-- `vue.custom_block` / `vue.custom_block.i18n`
+This works in dprint because it uses a different configuration parser. Use the `vue.customBlock` format (consistent with other vue-specific options like `vue.scriptIndent` and `vue.styleIndent`).
 
 **For JSON/TOML configuration files** (when using markup_fmt as a library or in other contexts): You **must** specify the default value when using per-block overrides.
 
@@ -304,10 +301,10 @@ Here's a comprehensive dprint configuration showing various markup_fmt options i
     "maxAttrsPerLine": 1,
     "whitespaceSensitivity": "css",
     "scriptFormatter": "dprint",
-    "vueCustomBlock": "langAttribute",
-    "vueCustomBlock.i18n": "langAttribute",
-    "vueCustomBlock.docs": "none",
-    "vueCustomBlock.metadata": "squash"
+    "vue.customBlock": "langAttribute",
+    "vue.customBlock.i18n": "langAttribute",
+    "vue.customBlock.docs": "none",
+    "vue.customBlock.metadata": "squash"
   },
   "typescript": {
     "quoteStyle": "preferDouble",
@@ -330,10 +327,10 @@ Or a minimal configuration:
   ],
   "markup": {
     "scriptFormatter": "dprint",
-    "vueCustomBlock.i18n": "none",
-    "vueCustomBlock.docs": "none"
+    "vue.customBlock.i18n": "none",
+    "vue.customBlock.docs": "none"
   }
 }
 ```
 
-In the minimal example, `vueCustomBlock` defaults to `"langAttribute"` and only the `i18n` and `docs` blocks have overrides.
+In the minimal example, `vue.customBlock` defaults to `"langAttribute"` and only the `i18n` and `docs` blocks have overrides.

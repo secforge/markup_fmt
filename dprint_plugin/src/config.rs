@@ -410,35 +410,27 @@ pub(crate) fn resolve_config(
                 &mut diagnostics,
             ),
             vue_custom_block: {
-                let default_value = if config.contains_key("vueCustomBlock") {
-                    get_value(&mut config, "vueCustomBlock", "lang-attribute".to_string(), &mut diagnostics)
-                } else if config.contains_key("vue.customBlock") {
-                    get_value(&mut config, "vue.customBlock", "lang-attribute".to_string(), &mut diagnostics)
-                } else {
-                    get_value(&mut config, "vue.custom_block", "lang-attribute".to_string(), &mut diagnostics)
-                };
+                let default_value = get_value(
+                    &mut config,
+                    "vue.customBlock",
+                    "lang-attribute".to_string(),
+                    &mut diagnostics,
+                );
                 let default_mode = match &*default_value {
                     "lang-attribute" | "langAttribute" => VueCustomBlock::LangAttribute,
                     "squash" => VueCustomBlock::Squash,
                     "none" => VueCustomBlock::None,
                     _ => {
                         diagnostics.push(ConfigurationDiagnostic {
-                            property_name: "vue.custom_block".into(),
-                            message: "invalid value for config `vue.custom_block`".into(),
+                            property_name: "vue.customBlock".into(),
+                            message: "invalid value for config `vue.customBlock`".into(),
                         });
                         VueCustomBlock::default()
                     }
                 };
                 let mut vue_config = VueCustomBlockConfig::new(default_mode);
                 for (key, value) in config.iter() {
-                    let block_name = if let Some(name) = key.strip_prefix("vueCustomBlock.") {
-                        Some(name)
-                    } else if let Some(name) = key.strip_prefix("vue.customBlock.") {
-                        Some(name)
-                    } else {
-                        key.strip_prefix("vue.custom_block.")
-                    };
-                    if let Some(block_name) = block_name
+                    if let Some(block_name) = key.strip_prefix("vue.customBlock.")
                         && let Some(value_str) = value.as_string()
                     {
                         let block_mode = match value_str.as_str() {
