@@ -237,7 +237,6 @@ pub struct LanguageOptions {
         serde(
             rename = "vue.custom_block",
             alias = "vue.customBlock",
-            alias = "vueCustomBlock",
             deserialize_with = "deserialize_vue_custom_block_config"
         )
     )]
