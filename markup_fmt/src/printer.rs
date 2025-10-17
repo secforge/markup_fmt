@@ -760,7 +760,7 @@ impl<'s> DocGen<'s> for Element<'s> {
                 );
             }
         } else if is_vue_custom_block && !is_empty {
-            let should_format = if let Some(child) = self.children.first()
+            if let Some(child) = self.children.first()
                 && let NodeKind::Text(text_node) = &child.kind
                 && !text_node.raw.chars().all(|c| c.is_ascii_whitespace())
             {
@@ -811,11 +811,7 @@ impl<'s> DocGen<'s> for Element<'s> {
                         }
                     }
                 }
-                true
             } else {
-                false
-            };
-            if !should_format {
                 docs.push(Doc::hard_line());
             }
         } else if tag_name.eq_ignore_ascii_case("pre") || tag_name.eq_ignore_ascii_case("textarea")
