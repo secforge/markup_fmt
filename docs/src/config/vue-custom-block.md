@@ -164,9 +164,17 @@ This is equivalent to:
 
 ### Important: Default Field Requirement
 
-When using per-block overrides in JSON or TOML configuration files, you **must** specify the default value. You cannot specify only override keys.
+**For dprint plugin users**: When using the dprint plugin, you can specify only override keys without the default. The default will be `"lang-attribute"` if not specified:
 
-**Invalid configuration** (will not work):
+```toml
+"vue.custom_block.i18n" = "none"
+```
+
+This works in dprint because it uses a different configuration parser.
+
+**For JSON/TOML configuration files** (when using markup_fmt as a library or in other contexts): You **must** specify the default value when using per-block overrides.
+
+**Invalid configuration** (will not work with serde):
 
 ```toml
 "vue.custom_block.i18n" = "none"
@@ -187,7 +195,7 @@ default = "lang-attribute"
 i18n = "none"
 ```
 
-This limitation exists because the configuration deserialization requires the parent key to be present when using per-block overrides.
+This limitation in non-dprint contexts exists because the serde configuration deserialization requires the parent key to be present when using per-block overrides.
 
 ### Case Insensitivity
 
