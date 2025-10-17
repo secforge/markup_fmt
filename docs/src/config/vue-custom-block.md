@@ -136,6 +136,59 @@ unknown-block = "squash"
 
 The `default` field sets the default formatting mode for all custom blocks not explicitly configured. Then, each custom block type can override this default.
 
+### Simplified Format
+
+If you only need to set the default mode without any per-block overrides, you can use a simplified string format:
+
+```json
+{
+  "vue.custom_block": "none"
+}
+```
+
+Or in TOML:
+
+```toml
+"vue.custom_block" = "none"
+```
+
+This is equivalent to:
+
+```json
+{
+  "vue.custom_block": {
+    "default": "none"
+  }
+}
+```
+
+### Important: Default Field Requirement
+
+When using per-block overrides in JSON or TOML configuration files, you **must** specify the default value. You cannot specify only override keys.
+
+**Invalid configuration** (will not work):
+
+```toml
+"vue.custom_block.i18n" = "none"
+```
+
+**Valid configurations**:
+
+```toml
+"vue.custom_block" = "lang-attribute"
+"vue.custom_block.i18n" = "none"
+```
+
+Or using the struct format:
+
+```toml
+[vue.custom_block]
+default = "lang-attribute"
+i18n = "none"
+```
+
+This limitation exists because the configuration deserialization requires the parent key to be present when using per-block overrides.
+
 ### Case Insensitivity
 
 Block names are matched case-insensitively, so `<I18N>`, `<i18n>`, and `<I18n>` will all match the `i18n` configuration.
