@@ -104,3 +104,96 @@ Output:
 ```
 
 Note: All custom block content is preserved exactly as written, even when a `lang` attribute is present.
+
+## Per-Block Configuration
+
+You can configure different formatting rules for different custom block types. This allows fine-grained control over how each custom block is handled.
+
+### Configuration Format
+
+In your configuration file, you can specify per-block rules under `vue.custom_block`:
+
+```json
+{
+  "vue.custom_block": {
+    "default": "lang-attribute",
+    "i18n": "lang-attribute",
+    "docs": "none",
+    "unknown-block": "squash"
+  }
+}
+```
+
+Or in TOML format:
+
+```toml
+[vue.custom_block]
+default = "lang-attribute"
+i18n = "lang-attribute"
+docs = "none"
+unknown-block = "squash"
+```
+
+The `default` field sets the default formatting mode for all custom blocks not explicitly configured. Then, each custom block type can override this default.
+
+### Case Insensitivity
+
+Block names are matched case-insensitively, so `<I18N>`, `<i18n>`, and `<I18n>` will all match the `i18n` configuration.
+
+### Example
+
+Given this configuration:
+
+```json
+{
+  "vue.custom_block": {
+    "default": "lang-attribute",
+    "docs": "none",
+    "metadata": "squash"
+  }
+}
+```
+
+Input:
+
+```html
+<template>
+  <div>Hello</div>
+</template>
+
+<i18n lang="json">
+{"key":   "value"}
+</i18n>
+
+<docs>
+  <p>This is  documentation</p>
+</docs>
+
+<metadata>
+  <div>Author:     Jane Doe</div>
+</metadata>
+```
+
+Output:
+
+```html
+<template>
+  <div>Hello</div>
+</template>
+
+<i18n lang="json">
+{
+  "key": "value"
+}
+</i18n>
+
+<docs>
+  <p>This is  documentation</p>
+</docs>
+
+<metadata><div>Author: Jane Doe</div></metadata>
+```
+
+- `<i18n>` follows the default behavior (`lang-attribute`), so it's formatted as JSON
+- `<docs>` is preserved exactly as written (mode `none`)
+- `<metadata>` has whitespace collapsed (mode `squash`)

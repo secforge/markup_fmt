@@ -770,7 +770,7 @@ impl<'s> DocGen<'s> for Element<'s> {
             // Handle Vue custom blocks (non-empty)
             // Empty Vue custom blocks fall through to is_empty handler to preserve empty content
             // Custom blocks are parsed as raw text, so there's only one text node child
-            match ctx.options.vue_custom_block {
+            match ctx.options.vue_custom_block.get(tag_name) {
                 VueCustomBlock::None => {
                     // Don't format, preserve raw content (like <pre>)
                     if let Some(Node { kind: NodeKind::Text(text_node), .. }) = self.children.first() {

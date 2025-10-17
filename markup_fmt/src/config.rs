@@ -236,7 +236,7 @@ pub struct LanguageOptions {
         feature = "config_serde",
         serde(rename = "vue.custom_block", alias = "vue.customBlock", alias = "vueCustomBlock")
     )]
-    pub vue_custom_block: VueCustomBlock,
+    pub vue_custom_block: VueCustomBlockConfig,
 }
 
 impl Default for LanguageOptions {
@@ -284,7 +284,7 @@ impl Default for LanguageOptions {
             script_formatter: None,
             ignore_comment_directive: "markup-fmt-ignore".into(),
             ignore_file_comment_directive: "markup-fmt-ignore-file".into(),
-            vue_custom_block: VueCustomBlock::default(),
+            vue_custom_block: VueCustomBlockConfig::default(),
         }
     }
 }
@@ -389,9 +389,6 @@ pub enum ScriptFormatter {
     Biome,
 }
 
-#[derive(Clone, Debug, Default)]
-#[cfg_attr(feature = "config_serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "config_serde", serde(rename_all = "kebab-case"))]
 /// Configuration for Vue custom blocks (like `<i18n>`, `<docs>`, etc.).
 ///
 /// Vue Single File Components (SFC) can contain custom blocks in addition to
@@ -409,6 +406,9 @@ pub enum ScriptFormatter {
 ///
 /// **None mode:**
 /// - `<i18n lang="json">...</i18n>` → Raw content preserved (even with lang attribute)
+#[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "config_serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "config_serde", serde(rename_all = "kebab-case"))]
 pub enum VueCustomBlock {
     /// Use the `lang` attribute to determine formatting.
     ///
@@ -432,4 +432,89 @@ pub enum VueCustomBlock {
     /// the presence of a `lang` attribute. This is equivalent to adding
     /// `<!-- markup-fmt-ignore -->` before each custom block.
     None,
+}
+
+/// Configuration for Vue custom blocks with per-block overrides.
+///
+/// Allows different formatting rules for different custom block types.
+///
+/// # Examples
+///
+/// ```toml
+/// [vue.custom_block]
+/// default = "lang-attribute"  # Default for all custom blocks
+/// i18n = "none"              # Never format <i18n> blocks
+/// docs = "squash"            # Format <docs> as HTML
+/// ```
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "config_serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "config_serde", serde(default))]
+pub struct VueCustomBlockConfig {
+    /// Default mode for custom blocks not specified in overrides
+    pub default: VueCustomBlock,
+    /// Per-block overrides (case-insensitive)
+    #[cfg_attr(
+        feature = "config_serde",
+        serde(
+            flatten,
+            deserialize_with = "deserialize_lowercase_map",
+            serialize_with = "serialize_lowercase_map"
+        )
+    )]
+    overrides: std::collections::HashMap<String, VueCustomBlock>,
+}
+
+impl Default for VueCustomBlockConfig {
+    fn default() -> Self {
+        Self {
+            default: VueCustomBlock::default(),
+            overrides: std::collections::HashMap::new(),
+        }
+    }
+}
+
+impl VueCustomBlockConfig {
+    /// Create a new configuration with only a default mode (no overrides).
+    pub fn new(default: VueCustomBlock) -> Self {
+        Self {
+            default,
+            overrides: std::collections::HashMap::new(),
+        }
+    }
+
+    /// Get the formatting mode for a specific custom block tag name.
+    /// Lookups are case-insensitive.
+    pub fn get(&self, tag_name: &str) -> &VueCustomBlock {
+        self.overrides
+            .get(&tag_name.to_ascii_lowercase())
+            .unwrap_or(&self.default)
+    }
+}
+
+#[cfg(feature = "config_serde")]
+fn deserialize_lowercase_map<'de, D>(
+    deserializer: D,
+) -> Result<std::collections::HashMap<String, VueCustomBlock>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::Deserialize;
+    let map = std::collections::HashMap::<String, VueCustomBlock>::deserialize(deserializer)?;
+    Ok(map
+        .into_iter()
+        .filter(|(k, _)| k != "default") // Filter out "default" key to avoid duplication
+        .map(|(k, v)| (k.to_ascii_lowercase(), v))
+        .collect())
+}
+
+#[cfg(feature = "config_serde")]
+fn serialize_lowercase_map<S>(
+    map: &std::collections::HashMap<String, VueCustomBlock>,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    use serde::Serialize;
+    map.serialize(serializer)
 }
