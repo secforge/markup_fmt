@@ -760,59 +760,58 @@ impl<'s> DocGen<'s> for Element<'s> {
                 );
             }
         } else if is_vue_custom_block && !is_empty {
-            let should_format = if let Some(child) = self.children.first() {
-                if let NodeKind::Text(text_node) = &child.kind && !text_node.raw.chars().all(|c| c.is_ascii_whitespace()) {
-                    match ctx.options.vue_custom_block.get(tag_name) {
-                        VueCustomBlock::None => {
+            let should_format = if let Some(child) = self.children.first()
+                && let NodeKind::Text(text_node) = &child.kind
+                && !text_node.raw.chars().all(|c| c.is_ascii_whitespace())
+            {
+                match ctx.options.vue_custom_block.get(tag_name) {
+                    VueCustomBlock::None => {
+                        docs.extend(reflow_raw(text_node.raw));
+                    }
+                    VueCustomBlock::Squash => {
+                        docs.push(child.kind.doc(ctx, &state));
+                    }
+                    VueCustomBlock::LangAttribute => {
+                        let lang_opt = self
+                            .attrs
+                            .iter()
+                            .find_map(|attr| match attr {
+                                Attribute::Native(native_attribute)
+                                    if native_attribute.name.eq_ignore_ascii_case("lang") =>
+                                {
+                                    native_attribute.value.map(|(value, _)| value)
+                                }
+                                _ => None,
+                            });
+
+                        if let Some(lang) = lang_opt {
+                            let is_script_indent = ctx.script_indent();
+                            let formatted = if lang == "json" {
+                                ctx.format_json(text_node.raw, text_node.start, &state)
+                            } else {
+                                ctx.format_script(text_node.raw, lang, text_node.start, &state)
+                            };
+                            let doc = if lang != "json"
+                                && matches!(ctx.options.script_formatter, Some(ScriptFormatter::Dprint))
+                            {
+                                Doc::hard_line().concat(reflow_owned(formatted.trim()))
+                            } else {
+                                Doc::hard_line().concat(reflow_with_indent(formatted.trim(), true))
+                            };
+                            docs.push(
+                                if is_script_indent {
+                                    doc.nest(ctx.indent_width)
+                                } else {
+                                    doc
+                                }
+                                .append(Doc::hard_line()),
+                            );
+                        } else {
                             docs.extend(reflow_raw(text_node.raw));
                         }
-                        VueCustomBlock::Squash => {
-                            docs.push(child.kind.doc(ctx, &state));
-                        }
-                        VueCustomBlock::LangAttribute => {
-                            let lang_opt = self
-                                .attrs
-                                .iter()
-                                .find_map(|attr| match attr {
-                                    Attribute::Native(native_attribute)
-                                        if native_attribute.name.eq_ignore_ascii_case("lang") =>
-                                    {
-                                        native_attribute.value.map(|(value, _)| value)
-                                    }
-                                    _ => None,
-                                });
-
-                            if let Some(lang) = lang_opt {
-                                let is_script_indent = ctx.script_indent();
-                                let formatted = if lang == "json" {
-                                    ctx.format_json(text_node.raw, text_node.start, &state)
-                                } else {
-                                    ctx.format_script(text_node.raw, lang, text_node.start, &state)
-                                };
-                                let doc = if lang != "json"
-                                    && matches!(ctx.options.script_formatter, Some(ScriptFormatter::Dprint))
-                                {
-                                    Doc::hard_line().concat(reflow_owned(formatted.trim()))
-                                } else {
-                                    Doc::hard_line().concat(reflow_with_indent(formatted.trim(), true))
-                                };
-                                docs.push(
-                                    if is_script_indent {
-                                        doc.nest(ctx.indent_width)
-                                    } else {
-                                        doc
-                                    }
-                                    .append(Doc::hard_line()),
-                                );
-                            } else {
-                                docs.extend(reflow_raw(text_node.raw));
-                            }
-                        }
                     }
-                    true
-                } else {
-                    false
                 }
+                true
             } else {
                 false
             };
