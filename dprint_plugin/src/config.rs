@@ -410,8 +410,6 @@ pub(crate) fn resolve_config(
                 &mut diagnostics,
             ),
             vue_custom_block: {
-                // Try new format first: vue.custom_block (without .default)
-                // Fall back to vue.custom_block.default for backward compatibility
                 let default_mode = match &*get_value(
                     &mut config,
                     "vue.custom_block",
@@ -429,11 +427,7 @@ pub(crate) fn resolve_config(
                         VueCustomBlock::default()
                     }
                 };
-
                 let mut vue_config = VueCustomBlockConfig::new(default_mode);
-
-                // Parse per-block overrides
-                // Look for keys like "vue.custom_block.i18n", "vue.custom_block.docs", etc.
                 let prefix = "vue.custom_block.";
                 let keys_to_check: Vec<String> = config.keys().cloned().collect();
                 for key in keys_to_check {
@@ -453,13 +447,11 @@ pub(crate) fn resolve_config(
                                         continue;
                                     }
                                 };
-                                // Use internal method to add override
                                 vue_config.add_override(block_name.to_string(), block_mode);
                             }
                         }
                     }
                 }
-
                 vue_config
             },
         },

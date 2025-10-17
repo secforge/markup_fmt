@@ -394,70 +394,21 @@ pub enum ScriptFormatter {
     Biome,
 }
 
-/// Configuration for Vue custom blocks (like `<i18n>`, `<docs>`, etc.).
-///
-/// Vue Single File Components (SFC) can contain custom blocks in addition to
-/// `<template>`, `<script>`, and `<style>`. These custom blocks are top-level
-/// elements used for various purposes like internationalization or documentation.
-///
-/// # Examples
-///
-/// **LangAttribute mode (default):**
-/// - `<i18n lang="json">...</i18n>` → Content formatted as JSON
-/// - `<i18n>...</i18n>` → Raw content preserved (not formatted)
-///
-/// **Squash mode:**
-/// - `<i18n>...</i18n>` → Content formatted as HTML (whitespace collapsed)
-///
-/// **None mode:**
-/// - `<i18n lang="json">...</i18n>` → Raw content preserved (even with lang attribute)
 #[derive(Clone, Debug, Default)]
 #[cfg_attr(feature = "config_serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "config_serde", serde(rename_all = "kebab-case"))]
 pub enum VueCustomBlock {
-    /// Use the `lang` attribute to determine formatting.
-    ///
-    /// When a custom block has a `lang` attribute (e.g., `<i18n lang="json">`),
-    /// the content will be formatted according to that language using the configured
-    /// external formatter.
-    ///
-    /// When no `lang` attribute is present, the content is preserved as-is without
-    /// any formatting, maintaining the original whitespace and indentation.
     #[default]
     LangAttribute,
-    /// Format content as HTML, collapsing whitespace.
-    ///
-    /// This is the legacy behavior. Content is treated as regular HTML content,
-    /// with whitespace collapsed and line breaks inserted to fit within the
-    /// configured print width. The `lang` attribute is ignored.
     Squash,
-    /// Never format custom block content.
-    ///
-    /// All custom block content is preserved exactly as written, regardless of
-    /// the presence of a `lang` attribute. This is equivalent to adding
-    /// `<!-- markup-fmt-ignore -->` before each custom block.
     None,
 }
 
-/// Configuration for Vue custom blocks with per-block overrides.
-///
-/// Allows different formatting rules for different custom block types.
-///
-/// # Examples
-///
-/// ```toml
-/// [vue.custom_block]
-/// default = "lang-attribute"  # Default for all custom blocks
-/// i18n = "none"              # Never format <i18n> blocks
-/// docs = "squash"            # Format <docs> as HTML
-/// ```
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "config_serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "config_serde", serde(default))]
 pub struct VueCustomBlockConfig {
-    /// Default mode for custom blocks not specified in overrides
     pub default: VueCustomBlock,
-    /// Per-block overrides (case-insensitive)
     #[cfg_attr(
         feature = "config_serde",
         serde(
@@ -479,23 +430,17 @@ impl Default for VueCustomBlockConfig {
 }
 
 impl VueCustomBlockConfig {
-    /// Create a new configuration with only a default mode (no overrides).
     pub fn new(default: VueCustomBlock) -> Self {
         Self {
             default,
             overrides: std::collections::HashMap::new(),
         }
     }
-
-    /// Get the formatting mode for a specific custom block tag name.
-    /// Lookups are case-insensitive.
     pub fn get(&self, tag_name: &str) -> &VueCustomBlock {
         self.overrides
             .get(&tag_name.to_ascii_lowercase())
             .unwrap_or(&self.default)
     }
-
-    /// Add a per-block override. The block name will be converted to lowercase.
     pub fn add_override(&mut self, block_name: String, mode: VueCustomBlock) {
         self.overrides.insert(block_name.to_ascii_lowercase(), mode);
     }
