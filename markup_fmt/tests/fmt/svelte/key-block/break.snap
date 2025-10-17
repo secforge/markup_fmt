@@ -1,5 +1,6 @@
 ---
 source: markup_fmt/tests/fmt.rs
+assertion_line: 30
 ---
 {#key bla}<p>loooooooooooooooooooooooooooooong</p><p>
     loooooooooooooooooooooooooooooong
@@ -11,8 +12,8 @@ source: markup_fmt/tests/fmt.rs
 {/key}
 
 {#key bla}
-  <span>loooooooooooooooooooooooooooooong</span> <span
-  >loooooooooooooooooooooooooooooong</span>
+  <span>loooooooooooooooooooooooooooooong</span>
+  <span>loooooooooooooooooooooooooooooong</span>
 {/key}
 
 {#key bla}<p>loooooooooooooooooooooooooooooong</p><p>

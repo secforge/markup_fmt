@@ -483,11 +483,8 @@ impl<'s> DocGen<'s> for Element<'s> {
                     docs.push(Doc::text(">"));
                     return Doc::list(docs).group();
                 }
-                if is_empty || !is_whitespace_sensitive {
-                    docs.push(Doc::text(">"));
-                } else {
-                    docs.push(Doc::line_or_nil().append(Doc::text(">")).group());
-                }
+                // Tags with no attributes should never split the opening tag
+                docs.push(Doc::text(">"));
             }
             [attr]
                 if ctx.options.single_attr_same_line

@@ -1,5 +1,6 @@
 ---
 source: markup_fmt/tests/fmt.rs
+assertion_line: 30
 ---
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
@@ -59,8 +60,7 @@ source: markup_fmt/tests/fmt.rs
             <dc:title>Pig Fang</dc:title>
           </cc:Agent>
         </dc:creator>
-        <dc:description
-        >The main      figure of the logo is the &quot;&lt;=&quot; under Fantasque Sans Mono with ligatures enabled.</dc:description>
+        <dc:description>The main      figure of the logo is the &quot;&lt;=&quot; under Fantasque Sans Mono with ligatures enabled.</dc:description>
       </cc:Work>
       <cc:License rdf:about="http://creativecommons.org/licenses/by-nd/4.0/">
         <cc:permits rdf:resource="http://creativecommons.org/ns#Reproduction" />

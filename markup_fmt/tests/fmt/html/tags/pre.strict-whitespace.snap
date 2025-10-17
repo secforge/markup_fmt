@@ -1,8 +1,8 @@
 ---
 source: markup_fmt/tests/fmt.rs
+assertion_line: 23
 ---
-<pre
->
+<pre>
 --------------------------------------------------------------------------------
 
 
@@ -26,8 +26,7 @@ source: markup_fmt/tests/fmt.rs
 
 --------------------------------------------------------------------------------
 </pre>
-<pre
->
+<pre>
 
         Text in a pre element
 
@@ -49,8 +48,7 @@ source: markup_fmt/tests/fmt.rs
 <pre>
      Foo     Bar</pre>
 <figure role="img" aria-labelledby="cow-caption">
-  <pre
-  >
+  <pre>
 ___________________________
 < I'm an expert in my field. >
 ---------------------------
@@ -111,10 +109,8 @@ ___________________________
 <pre><HR /></pre>
 <pre><span></span></pre>
 <pre><DIV></DIV></pre>
-<pre
-><br/>long long long text long long long text long long long text long long long text <br></pre>
-<pre
-><br>long long long text long long long text long long long text long long long text <BR/></pre>
+<pre><br/>long long long text long long long text long long long text long long long text <br></pre>
+<pre><br>long long long text long long long text long long long text long long long text <BR/></pre>
 
 <pre><a></pre>
 <pre></b></pre>

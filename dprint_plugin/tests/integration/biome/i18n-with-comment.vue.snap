@@ -6,8 +6,7 @@ assertion_line: 218
   <div>{{ $t("hello") }}</div>
 </template>
 
-<i18n
->
+<i18n>
 {
 "en":    {"hello":   "Hello"}
 }

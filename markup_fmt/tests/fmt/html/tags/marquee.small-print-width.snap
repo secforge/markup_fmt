@@ -1,8 +1,8 @@
 ---
 source: markup_fmt/tests/fmt.rs
+assertion_line: 23
 ---
-<marquee
->This
+<marquee>This
   text
   will
   scroll

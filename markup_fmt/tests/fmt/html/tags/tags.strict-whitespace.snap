@@ -1,5 +1,6 @@
 ---
 source: markup_fmt/tests/fmt.rs
+assertion_line: 23
 ---
 <br />
 <br />
@@ -68,8 +69,7 @@ source: markup_fmt/tests/fmt.rs
 <div><div>string</div><div><div>string</div></div></div>
 <div><div></div></div>
 <div><div></div><div></div></div>
-<div><div><div><div><div><div><div
-            >string</div></div></div></div></div></div></div>
+<div><div><div><div><div><div><div>string</div></div></div></div></div></div></div>
 <div>
   <div>string</div>
 </div>
@@ -113,8 +113,7 @@ source: markup_fmt/tests/fmt.rs
 >Disabled Cancel</button>
 <br /><br />
 <p>"<span [innerHTML]="title"></span>" is the <i>property bound</i> title.</p>
-<li
->12345678901234567890123456789012345678901234567890123456789012345678901234567890</li>
+<li>12345678901234567890123456789012345678901234567890123456789012345678901234567890</li>
 <div>
   <app-nav></app-nav>
   <router-outlet></router-outlet>
@@ -131,8 +130,8 @@ source: markup_fmt/tests/fmt.rs
 <x:root><span>tag name in other namespace should also lower
     cased</span></x:root>
 <div>
-  Lorem ipsum dolor sit amet, consectetur adipiscing elit, "<strong
-  >seddoeiusmod</strong>".
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+  "<strong>seddoeiusmod</strong>".
 </div>
 <div>
   Lorem ipsum dolor sit amet, consectetur adipiscing elit,

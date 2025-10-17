@@ -6,8 +6,7 @@ assertion_line: 218
   <div>{{ $t("hello") }}</div>
 </template>
 
-<docs
->
+<docs>
 Some documentation text.
 
 More documentation on another line.

@@ -1,11 +1,11 @@
 ---
 source: markup_fmt/tests/fmt.rs
+assertion_line: 30
 ---
 <template>
   <template>foo</template>
 </template>
 
 <template>
-  <template
-  >foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo</template>
+  <template>foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo</template>
 </template>

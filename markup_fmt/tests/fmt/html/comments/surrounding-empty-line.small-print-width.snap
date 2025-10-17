@@ -1,5 +1,6 @@
 ---
 source: markup_fmt/tests/fmt.rs
+assertion_line: 23
 ---
 <ul>
   <!-- 123
@@ -36,28 +37,19 @@ source: markup_fmt/tests/fmt.rs
 
 -->
 </ul>
-<span
-><!--
---><span
-  >a</span><!--
---><span
-  >b</span><!--
+<span><!--
+--><span>a</span><!--
+--><span>b</span><!--
 --></span>
 
-<span
-><!-- 1
---><span
-  >a</span><!-- 2
---><span
-  >b</span><!-- 3
+<span><!-- 1
+--><span>a</span><!-- 2
+--><span>b</span><!-- 3
 --></span>
 
-<span
-><!--
-1 --><span
-  >a</span><!--
-2 --><span
-  >b</span><!--
+<span><!--
+1 --><span>a</span><!--
+2 --><span>b</span><!--
 3 --></span>
 
 123<!---->456

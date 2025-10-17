@@ -1,9 +1,9 @@
 ---
 source: markup_fmt/tests/fmt.rs
+assertion_line: 23
 ---
 <div>
-  before<noscript
-  >noscript
+  before<noscript>noscript
     long
     long
     long
