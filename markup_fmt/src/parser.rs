@@ -1075,15 +1075,18 @@ impl<'s> Parser<'s> {
         }
 
         let mut children = vec![];
+        let is_script = tag_name.eq_ignore_ascii_case("script");
+        let is_style = tag_name.eq_ignore_ascii_case("style");
+        let is_template = tag_name.eq_ignore_ascii_case("template");
         let is_vue_custom_block = self.language == Language::Vue
             && self.state.element_depth == 0
-            && !tag_name.eq_ignore_ascii_case("template")
-            && !tag_name.eq_ignore_ascii_case("script")
-            && !tag_name.eq_ignore_ascii_case("style");
+            && !is_template
+            && !is_script
+            && !is_style;
 
         let should_parse_raw = self.language != Language::Xml
-            && (tag_name.eq_ignore_ascii_case("script")
-                || tag_name.eq_ignore_ascii_case("style")
+            && (is_script
+                || is_style
                 || tag_name.eq_ignore_ascii_case("pre")
                 || tag_name.eq_ignore_ascii_case("textarea")
                 || is_vue_custom_block);
