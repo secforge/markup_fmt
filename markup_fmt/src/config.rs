@@ -489,6 +489,11 @@ impl VueCustomBlockConfig {
             .get(&tag_name.to_ascii_lowercase())
             .unwrap_or(&self.default)
     }
+
+    /// Add a per-block override. The block name will be converted to lowercase.
+    pub fn add_override(&mut self, block_name: String, mode: VueCustomBlock) {
+        self.overrides.insert(block_name.to_ascii_lowercase(), mode);
+    }
 }
 
 #[cfg(feature = "config_serde")]

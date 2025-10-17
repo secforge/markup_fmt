@@ -428,9 +428,37 @@ pub(crate) fn resolve_config(
                     }
                 };
 
-                // TODO: Parse per-block overrides from config
-                // For now, we only support the default mode
-                VueCustomBlockConfig::new(default_mode)
+                let mut vue_config = VueCustomBlockConfig::new(default_mode);
+
+                // Parse per-block overrides
+                // Look for keys like "vue.custom_block.i18n", "vue.custom_block.docs", etc.
+                let prefix = "vue.custom_block.";
+                let keys_to_check: Vec<String> = config.keys().cloned().collect();
+                for key in keys_to_check {
+                    if key.starts_with(prefix) && key != "vue.custom_block.default" {
+                        let block_name = &key[prefix.len()..];
+                        if let Some(value) = config.get(&key) {
+                            if let Some(value_str) = value.as_string() {
+                                let block_mode = match value_str.as_str() {
+                                    "lang-attribute" | "langAttribute" => VueCustomBlock::LangAttribute,
+                                    "squash" => VueCustomBlock::Squash,
+                                    "none" => VueCustomBlock::None,
+                                    _ => {
+                                        diagnostics.push(ConfigurationDiagnostic {
+                                            property_name: key.clone(),
+                                            message: format!("invalid value for config `{}`", key),
+                                        });
+                                        continue;
+                                    }
+                                };
+                                // Use internal method to add override
+                                vue_config.add_override(block_name.to_string(), block_mode);
+                            }
+                        }
+                    }
+                }
+
+                vue_config
             },
         },
     };
