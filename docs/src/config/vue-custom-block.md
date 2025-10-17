@@ -282,11 +282,6 @@ Here's a comprehensive dprint configuration showing various markup_fmt options i
 
 ```json
 {
-  "plugins": [
-    "https://plugins.dprint.dev/markup-0.24.0.wasm",
-    "https://plugins.dprint.dev/typescript-0.95.10.wasm",
-    "https://plugins.dprint.dev/json-0.20.0.wasm"
-  ],
   "markup": {
     "printWidth": 100,
     "indentWidth": 2,
@@ -305,16 +300,7 @@ Here's a comprehensive dprint configuration showing various markup_fmt options i
     "vue.customBlock.i18n": "langAttribute",
     "vue.customBlock.docs": "none",
     "vue.customBlock.metadata": "squash"
-  },
-  "typescript": {
-    "quoteStyle": "preferDouble",
-    "semiColons": "prefer"
-  },
-  "json": {
-    "indentWidth": 2
-  },
-  "includes": ["**/*.{html,vue,svelte,astro}"],
-  "excludes": ["**/node_modules", "**/*-lock.json"]
+  }
 }
 ```
 
@@ -322,9 +308,6 @@ Or a minimal configuration:
 
 ```json
 {
-  "plugins": [
-    "https://plugins.dprint.dev/markup-0.24.0.wasm"
-  ],
   "markup": {
     "scriptFormatter": "dprint",
     "vue.customBlock.i18n": "none",
