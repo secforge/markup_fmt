@@ -124,7 +124,16 @@ In your configuration file, you can specify per-block rules under `vue.custom_bl
 }
 ```
 
-Or in TOML format:
+Or in TOML/dprint format (using camelCase, recommended for dprint):
+
+```toml
+vueCustomBlock = "langAttribute"
+"vueCustomBlock.i18n" = "langAttribute"
+"vueCustomBlock.docs" = "none"
+"vueCustomBlock.unknownBlock" = "squash"
+```
+
+Or using the struct format:
 
 ```toml
 [vue.custom_block]
@@ -134,22 +143,26 @@ docs = "none"
 unknown-block = "squash"
 ```
 
-The `default` field sets the default formatting mode for all custom blocks not explicitly configured. Then, each custom block type can override this default.
+The `default` field (or the base `vueCustomBlock` key) sets the default formatting mode for all custom blocks not explicitly configured. Then, each custom block type can override this default.
 
 ### Simplified Format
 
-If you only need to set the default mode without any per-block overrides, you can use a simplified string format:
+If you only need to set the default mode without any per-block overrides, you can use a simplified string format.
+
+For dprint (camelCase recommended):
+
+```json
+{
+  "vueCustomBlock": "langAttribute"
+}
+```
+
+Or in JSON/library contexts:
 
 ```json
 {
   "vue.custom_block": "none"
 }
-```
-
-Or in TOML:
-
-```toml
-"vue.custom_block" = "none"
 ```
 
 This is equivalent to:
@@ -164,13 +177,20 @@ This is equivalent to:
 
 ### Important: Default Field Requirement
 
-**For dprint plugin users**: When using the dprint plugin, you can specify only override keys without the default. The default will be `"lang-attribute"` if not specified:
+**For dprint plugin users**: When using the dprint plugin, you can specify only override keys without the default. The default will be `"langAttribute"` if not specified:
 
-```toml
-"vue.custom_block.i18n" = "none"
+```json
+{
+  "markup": {
+    "vueCustomBlock.i18n": "none"
+  }
+}
 ```
 
-This works in dprint because it uses a different configuration parser.
+This works in dprint because it uses a different configuration parser. All three naming conventions work in dprint:
+- `vueCustomBlock` / `vueCustomBlock.i18n` (recommended)
+- `vue.customBlock` / `vue.customBlock.i18n`
+- `vue.custom_block` / `vue.custom_block.i18n`
 
 **For JSON/TOML configuration files** (when using markup_fmt as a library or in other contexts): You **must** specify the default value when using per-block overrides.
 
@@ -258,3 +278,62 @@ Output:
 - `<i18n>` follows the default behavior (`lang-attribute`), so it's formatted as JSON
 - `<docs>` is preserved exactly as written (mode `none`)
 - `<metadata>` has whitespace collapsed (mode `squash`)
+
+## Complete dprint Configuration Example
+
+Here's a comprehensive dprint configuration showing various markup_fmt options including Vue custom blocks:
+
+```json
+{
+  "plugins": [
+    "https://plugins.dprint.dev/markup-0.24.0.wasm",
+    "https://plugins.dprint.dev/typescript-0.95.10.wasm",
+    "https://plugins.dprint.dev/json-0.20.0.wasm"
+  ],
+  "markup": {
+    "printWidth": 100,
+    "indentWidth": 2,
+    "useTabs": false,
+    "lineBreak": "lf",
+    "quotes": "double",
+    "formatComments": true,
+    "scriptIndent": false,
+    "styleIndent": false,
+    "closingBracketSameLine": false,
+    "closingTagLineBreakForEmpty": "fit",
+    "maxAttrsPerLine": 1,
+    "whitespaceSensitivity": "css",
+    "scriptFormatter": "dprint",
+    "vueCustomBlock": "langAttribute",
+    "vueCustomBlock.i18n": "langAttribute",
+    "vueCustomBlock.docs": "none",
+    "vueCustomBlock.metadata": "squash"
+  },
+  "typescript": {
+    "quoteStyle": "preferDouble",
+    "semiColons": "prefer"
+  },
+  "json": {
+    "indentWidth": 2
+  },
+  "includes": ["**/*.{html,vue,svelte,astro}"],
+  "excludes": ["**/node_modules", "**/*-lock.json"]
+}
+```
+
+Or a minimal configuration:
+
+```json
+{
+  "plugins": [
+    "https://plugins.dprint.dev/markup-0.24.0.wasm"
+  ],
+  "markup": {
+    "scriptFormatter": "dprint",
+    "vueCustomBlock.i18n": "none",
+    "vueCustomBlock.docs": "none"
+  }
+}
+```
+
+In the minimal example, `vueCustomBlock` defaults to `"langAttribute"` and only the `i18n` and `docs` blocks have overrides.
