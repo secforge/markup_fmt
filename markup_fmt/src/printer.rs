@@ -471,7 +471,6 @@ impl<'s> DocGen<'s> for Element<'s> {
             && self.tag_name.eq_ignore_ascii_case("template")
             || state.in_svg)
             && ctx.is_whitespace_sensitive(tag_name);
-        let is_whitespace_sensitive_for_attrs = is_whitespace_sensitive && !is_vue_custom_block;
         let mut is_empty = is_empty_element(&self.children, is_whitespace_sensitive);
         if is_vue_custom_block
             && matches!(
@@ -508,7 +507,7 @@ impl<'s> DocGen<'s> for Element<'s> {
             }
             [attr]
                 if ctx.options.single_attr_same_line
-                    && !is_whitespace_sensitive_for_attrs
+                    && (!is_whitespace_sensitive || is_vue_custom_block)
                     && !is_multi_line_attr(attr) =>
             {
                 docs.push(Doc::space());
