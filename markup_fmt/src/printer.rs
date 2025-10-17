@@ -773,7 +773,7 @@ impl<'s> DocGen<'s> for Element<'s> {
                     }
                 }
                 VueCustomBlock::Squash => {
-                    for child in &self.children {
+                    if let Some(child) = self.children.first() {
                         docs.push(child.kind.doc(ctx, &state));
                     }
                 }
