@@ -412,7 +412,7 @@ pub(crate) fn resolve_config(
             vue_custom_block: {
                 let default_mode = match &*get_value(
                     &mut config,
-                    "vue.customBlock",
+                    "vue.custom_block.default",
                     "lang-attribute".to_string(),
                     &mut diagnostics,
                 ) {
@@ -421,12 +421,15 @@ pub(crate) fn resolve_config(
                     "none" => VueCustomBlock::None,
                     _ => {
                         diagnostics.push(ConfigurationDiagnostic {
-                            property_name: "vue.customBlock".into(),
-                            message: "invalid value for config `vue.customBlock`".into(),
+                            property_name: "vue.custom_block.default".into(),
+                            message: "invalid value for config `vue.custom_block.default`".into(),
                         });
                         VueCustomBlock::default()
                     }
                 };
+
+                // TODO: Parse per-block overrides from config
+                // For now, we only support the default mode
                 VueCustomBlockConfig::new(default_mode)
             },
         },

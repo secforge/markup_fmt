@@ -1,5 +1,6 @@
 ---
 source: dprint_plugin/tests/integration.rs
+assertion_line: 123
 ---
 <template>
   <div>{{ $t("hello") }}</div>
@@ -7,7 +8,7 @@ source: dprint_plugin/tests/integration.rs
 
 <i18n lang="json">
 {
-"en":    {"hello":   "Hello"},
-  "de": {"hello":"Hallo"   }
+  "en": { "hello": "Hello" },
+  "de": { "hello": "Hallo" }
 }
 </i18n>
