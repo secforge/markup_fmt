@@ -1093,7 +1093,6 @@ impl<'s> Parser<'s> {
                 });
             }
         } else {
-            // Increment depth when parsing children
             self.state.element_depth += 1;
         }
 
@@ -1154,7 +1153,6 @@ impl<'s> Parser<'s> {
             }
         }
 
-        // Decrement depth after parsing children (if we incremented it)
         if !should_parse_raw {
             self.state.element_depth -= 1;
         }
