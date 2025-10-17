@@ -429,10 +429,8 @@ pub(crate) fn resolve_config(
                 };
                 let mut vue_config = VueCustomBlockConfig::new(default_mode);
                 let prefix = "vue.custom_block.";
-                let keys_to_check: Vec<String> = config.keys().cloned().collect();
-                for key in keys_to_check {
+                for (key, value) in config.iter() {
                     if let Some(block_name) = key.strip_prefix(prefix)
-                        && let Some(value) = config.get(&key)
                         && let Some(value_str) = value.as_string()
                     {
                         let block_mode = match value_str.as_str() {
