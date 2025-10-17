@@ -766,8 +766,9 @@ impl<'s> DocGen<'s> for Element<'s> {
                     .append(Doc::hard_line()),
                 );
             }
-        } else if is_vue_custom_block {
-            // Handle Vue custom blocks
+        } else if is_vue_custom_block && !is_empty {
+            // Handle Vue custom blocks (non-empty)
+            // Empty Vue custom blocks fall through to is_empty handler to preserve empty content
             // Custom blocks are parsed as raw text, so there's only one text node child
             match ctx.options.vue_custom_block {
                 VueCustomBlock::None => {
@@ -780,7 +781,7 @@ impl<'s> DocGen<'s> for Element<'s> {
                             docs.push(Doc::hard_line());
                         }
                     } else {
-                        // Empty or no text node
+                        // No text node
                         docs.push(Doc::hard_line());
                     }
                 }
@@ -835,7 +836,7 @@ impl<'s> DocGen<'s> for Element<'s> {
                                 docs.push(Doc::hard_line());
                             }
                         } else {
-                            // Empty or no text node
+                            // No text node
                             docs.push(Doc::hard_line());
                         }
                     } else {
@@ -848,7 +849,7 @@ impl<'s> DocGen<'s> for Element<'s> {
                                 docs.push(Doc::hard_line());
                             }
                         } else {
-                            // Empty or no text node
+                            // No text node
                             docs.push(Doc::hard_line());
                         }
                     }

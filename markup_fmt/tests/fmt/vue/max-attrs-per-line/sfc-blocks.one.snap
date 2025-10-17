@@ -22,8 +22,7 @@ p {
   bar="bar"
   baz
   long_long_long_long_attribute
->
-</unknown-block>
+></unknown-block>
 
 <script
   lang="ts"
