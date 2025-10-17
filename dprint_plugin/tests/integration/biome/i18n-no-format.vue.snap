@@ -8,7 +8,7 @@ assertion_line: 218
 
 <i18n lang="json">
 {
-	"en": { "hello": "Hello" },
-	"de": { "hello": "Hallo" }
+"en":    {"hello":   "Hello"},
+  "de": {"hello":"Hallo"   }
 }
 </i18n>

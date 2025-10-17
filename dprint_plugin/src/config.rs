@@ -410,9 +410,11 @@ pub(crate) fn resolve_config(
                 &mut diagnostics,
             ),
             vue_custom_block: {
+                // Try new format first: vue.custom_block (without .default)
+                // Fall back to vue.custom_block.default for backward compatibility
                 let default_mode = match &*get_value(
                     &mut config,
-                    "vue.custom_block.default",
+                    "vue.custom_block",
                     "lang-attribute".to_string(),
                     &mut diagnostics,
                 ) {
@@ -421,8 +423,8 @@ pub(crate) fn resolve_config(
                     "none" => VueCustomBlock::None,
                     _ => {
                         diagnostics.push(ConfigurationDiagnostic {
-                            property_name: "vue.custom_block.default".into(),
-                            message: "invalid value for config `vue.custom_block.default`".into(),
+                            property_name: "vue.custom_block".into(),
+                            message: "invalid value for config `vue.custom_block`".into(),
                         });
                         VueCustomBlock::default()
                     }
@@ -435,7 +437,7 @@ pub(crate) fn resolve_config(
                 let prefix = "vue.custom_block.";
                 let keys_to_check: Vec<String> = config.keys().cloned().collect();
                 for key in keys_to_check {
-                    if key.starts_with(prefix) && key != "vue.custom_block.default" {
+                    if key.starts_with(prefix) {
                         let block_name = &key[prefix.len()..];
                         if let Some(value) = config.get(&key) {
                             if let Some(value_str) = value.as_string() {

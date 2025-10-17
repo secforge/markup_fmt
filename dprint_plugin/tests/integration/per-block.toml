@@ -1,4 +1,4 @@
-"vue.custom_block.default" = "lang-attribute"
+"vue.custom_block" = "lang-attribute"
 "vue.custom_block.i18n" = "lang-attribute"
 "vue.custom_block.docs" = "none"
 "vue.custom_block.unknown" = "squash"

@@ -234,7 +234,12 @@ pub struct LanguageOptions {
 
     #[cfg_attr(
         feature = "config_serde",
-        serde(rename = "vue.custom_block", alias = "vue.customBlock", alias = "vueCustomBlock")
+        serde(
+            rename = "vue.custom_block",
+            alias = "vue.customBlock",
+            alias = "vueCustomBlock",
+            deserialize_with = "deserialize_vue_custom_block_config"
+        )
     )]
     pub vue_custom_block: VueCustomBlockConfig,
 }
@@ -522,4 +527,26 @@ where
 {
     use serde::Serialize;
     map.serialize(serializer)
+}
+
+#[cfg(feature = "config_serde")]
+fn deserialize_vue_custom_block_config<'de, D>(
+    deserializer: D,
+) -> Result<VueCustomBlockConfig, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::Deserialize;
+
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum StringOrStruct {
+        String(VueCustomBlock),
+        Struct(VueCustomBlockConfig),
+    }
+
+    match StringOrStruct::deserialize(deserializer)? {
+        StringOrStruct::String(default) => Ok(VueCustomBlockConfig::new(default)),
+        StringOrStruct::Struct(config) => Ok(config),
+    }
 }
