@@ -433,22 +433,22 @@ pub(crate) fn resolve_config(
                 for key in keys_to_check {
                     if key.starts_with(prefix) {
                         let block_name = &key[prefix.len()..];
-                        if let Some(value) = config.get(&key) {
-                            if let Some(value_str) = value.as_string() {
-                                let block_mode = match value_str.as_str() {
-                                    "lang-attribute" | "langAttribute" => VueCustomBlock::LangAttribute,
-                                    "squash" => VueCustomBlock::Squash,
-                                    "none" => VueCustomBlock::None,
-                                    _ => {
-                                        diagnostics.push(ConfigurationDiagnostic {
-                                            property_name: key.clone(),
-                                            message: format!("invalid value for config `{}`", key),
-                                        });
-                                        continue;
-                                    }
-                                };
-                                vue_config.add_override(block_name.to_string(), block_mode);
-                            }
+                        if let Some(value) = config.get(&key)
+                            && let Some(value_str) = value.as_string()
+                        {
+                            let block_mode = match value_str.as_str() {
+                                "lang-attribute" | "langAttribute" => VueCustomBlock::LangAttribute,
+                                "squash" => VueCustomBlock::Squash,
+                                "none" => VueCustomBlock::None,
+                                _ => {
+                                    diagnostics.push(ConfigurationDiagnostic {
+                                        property_name: key.clone(),
+                                        message: format!("invalid value for config `{}`", key),
+                                    });
+                                    continue;
+                                }
+                            };
+                            vue_config.add_override(block_name.to_string(), block_mode);
                         }
                     }
                 }
