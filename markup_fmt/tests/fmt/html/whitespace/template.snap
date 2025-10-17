@@ -6,5 +6,6 @@ source: markup_fmt/tests/fmt.rs
 </template>
 
 <template>
-  <template>foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo</template>
+  <template
+  >foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo</template>
 </template>

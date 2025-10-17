@@ -2,7 +2,8 @@
 source: markup_fmt/tests/fmt.rs
 ---
 <div>
-  before<noscript>noscript
+  before<noscript
+  >noscript
     long
     long
     long

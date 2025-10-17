@@ -9,7 +9,10 @@ source: markup_fmt/tests/fmt.rs
   a
   letter?
   Use
-  our<a><b><a>mailing
+  our<a
+  ><b
+    ><a
+      >mailing
         address</a></b></a>.
 </p>
 
@@ -23,7 +26,9 @@ source: markup_fmt/tests/fmt.rs
   Use
   our<a
     href="contacts.html#Mailing_address"
-  ><b><a>mailing
+  ><b
+    ><a
+      >mailing
         address</a></b></a>.
 </p>
 
@@ -41,6 +46,8 @@ source: markup_fmt/tests/fmt.rs
     href2="contacts.html#Mailing_address"
     href3="contacts.html#Mailing_address"
     href4="contacts.html#Mailing_address"
-  ><b><a>mailing
+  ><b
+    ><a
+      >mailing
         address</a></b></a>.
 </p>

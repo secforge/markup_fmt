@@ -491,8 +491,13 @@ impl<'s> DocGen<'s> for Element<'s> {
                     docs.push(Doc::text(">"));
                     return Doc::list(docs).group();
                 }
-                // Tags with no attributes should never split the opening tag
-                docs.push(Doc::text(">"));
+                // Vue custom blocks should never split their opening tag
+                // For other tags, allow line breaking for whitespace-sensitive non-empty elements
+                if is_empty || !is_whitespace_sensitive || is_vue_custom_block {
+                    docs.push(Doc::text(">"));
+                } else {
+                    docs.push(Doc::line_or_nil().append(Doc::text(">")).group());
+                }
             }
             [attr]
                 if ctx.options.single_attr_same_line

@@ -158,8 +158,8 @@ source: markup_fmt/tests/fmt.rs
 <x:root><span>tag name in other namespace should also lower
     cased</span></x:root>
 <div>
-  Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-  "<strong>seddoeiusmod</strong>".
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, "<strong
+  >seddoeiusmod</strong>".
 </div>
 <div>
   Lorem ipsum dolor sit amet, consectetur adipiscing elit,

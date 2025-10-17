@@ -229,7 +229,9 @@ source: markup_fmt/tests/fmt.rs
     Second
   </li>789
 </ul>
-<span>*<b>200</b></span>
+<span
+>*<b
+  >200</b></span>
 <img
   src="longlonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglong"
 />123
@@ -287,7 +289,8 @@ source: markup_fmt/tests/fmt.rs
   ></span>"
   is
   the
-  <i>property
+  <i
+  >property
     bound</i>
   title.
 </p>
@@ -311,7 +314,9 @@ source: markup_fmt/tests/fmt.rs
     [input]="something"
   ></app-footer>
 </div>
-<x:root><span>tag
+<x:root
+><span
+  >tag
     name
     in
     other
@@ -329,7 +334,8 @@ source: markup_fmt/tests/fmt.rs
   consectetur
   adipiscing
   elit,
-  "<strong>seddoeiusmod</strong>".
+  "<strong
+  >seddoeiusmod</strong>".
 </div>
 <div>
   Lorem
@@ -340,9 +346,11 @@ source: markup_fmt/tests/fmt.rs
   consectetur
   adipiscing
   elit,
-  <strong>seddoeiusmod</strong>.
+  <strong
+  >seddoeiusmod</strong>.
 </div>
-<span>
+<span
+>
   <i
     class="fa fa-refresh fa-spin"
   />
@@ -370,13 +378,17 @@ source: markup_fmt/tests/fmt.rs
 </div>
 
 <!-- self-closing -->
-<span><input
+<span
+><input
     type="checkbox"
   />
 </span>
-<span><span><input
+<span
+><span
+  ><input
       type="checkbox"
     /></span></span>
-<span><input
+<span
+><input
     type="checkbox"
   /></span>
