@@ -21,7 +21,8 @@ p {
   foo
   bar="bar"
   baz
-  long_long_long_long_attribute>
+  long_long_long_long_attribute
+>
 </unknown-block>
 
 <script

@@ -474,7 +474,20 @@ impl<'s> DocGen<'s> for Element<'s> {
         // For attribute formatting purposes, Vue custom blocks should not be treated as whitespace-sensitive
         // to allow single attributes to stay on the same line
         let is_whitespace_sensitive_for_attrs = is_whitespace_sensitive && !is_vue_custom_block;
-        let is_empty = is_empty_element(&self.children, is_whitespace_sensitive);
+        let mut is_empty = is_empty_element(&self.children, is_whitespace_sensitive);
+        // Vue custom blocks with empty content should be treated as empty
+        // to prevent unwanted line breaks
+        if is_vue_custom_block
+            && matches!(
+                &self.children[..],
+                [Node {
+                    kind: NodeKind::Text(text_node),
+                    ..
+                }] if text_node.raw.is_empty()
+            )
+        {
+            is_empty = true;
+        }
 
         let mut docs = Vec::with_capacity(5);
 
@@ -578,10 +591,8 @@ impl<'s> DocGen<'s> for Element<'s> {
                 if ctx.options.closing_bracket_same_line {
                     docs.push(attrs.append(Doc::text(">")).group());
                 } else {
-                    // Vue custom blocks should never split their opening tag
-                    if is_vue_custom_block {
-                        docs.push(attrs.append(Doc::text(">")).group());
-                    } else if is_whitespace_sensitive
+                    // for #16
+                    if is_whitespace_sensitive
                         && self.children.first().is_some_and(|child| {
                             if let NodeKind::Text(text_node) = &child.kind {
                                 !text_node.raw.starts_with(|c: char| c.is_ascii_whitespace())
@@ -597,7 +608,6 @@ impl<'s> DocGen<'s> for Element<'s> {
                             }
                         })
                     {
-                        // for #16
                         docs.push(
                             attrs
                                 .group()
