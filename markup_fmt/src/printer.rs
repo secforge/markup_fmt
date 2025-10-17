@@ -760,39 +760,29 @@ impl<'s> DocGen<'s> for Element<'s> {
                 );
             }
         } else if is_vue_custom_block && !is_empty {
-            match ctx.options.vue_custom_block.get(tag_name) {
-                VueCustomBlock::None => {
-                    if let Some(Node { kind: NodeKind::Text(text_node), .. }) = self.children.first() {
-                        if !text_node.raw.chars().all(|c| c.is_ascii_whitespace()) {
+            let should_format = if let Some(child) = self.children.first() {
+                if let NodeKind::Text(text_node) = &child.kind && !text_node.raw.chars().all(|c| c.is_ascii_whitespace()) {
+                    match ctx.options.vue_custom_block.get(tag_name) {
+                        VueCustomBlock::None => {
                             docs.extend(reflow_raw(text_node.raw));
-                        } else {
-                            docs.push(Doc::hard_line());
                         }
-                    } else {
-                        docs.push(Doc::hard_line());
-                    }
-                }
-                VueCustomBlock::Squash => {
-                    if let Some(child) = self.children.first() {
-                        docs.push(child.kind.doc(ctx, &state));
-                    }
-                }
-                VueCustomBlock::LangAttribute => {
-                    let lang_opt = self
-                        .attrs
-                        .iter()
-                        .find_map(|attr| match attr {
-                            Attribute::Native(native_attribute)
-                                if native_attribute.name.eq_ignore_ascii_case("lang") =>
-                            {
-                                native_attribute.value.map(|(value, _)| value)
-                            }
-                            _ => None,
-                        });
+                        VueCustomBlock::Squash => {
+                            docs.push(child.kind.doc(ctx, &state));
+                        }
+                        VueCustomBlock::LangAttribute => {
+                            let lang_opt = self
+                                .attrs
+                                .iter()
+                                .find_map(|attr| match attr {
+                                    Attribute::Native(native_attribute)
+                                        if native_attribute.name.eq_ignore_ascii_case("lang") =>
+                                    {
+                                        native_attribute.value.map(|(value, _)| value)
+                                    }
+                                    _ => None,
+                                });
 
-                    if let Some(lang) = lang_opt {
-                        if let Some(Node { kind: NodeKind::Text(text_node), .. }) = self.children.first() {
-                            if !text_node.raw.chars().all(|c| c.is_ascii_whitespace()) {
+                            if let Some(lang) = lang_opt {
                                 let is_script_indent = ctx.script_indent();
                                 let formatted = if lang == "json" {
                                     ctx.format_json(text_node.raw, text_node.start, &state)
@@ -815,23 +805,19 @@ impl<'s> DocGen<'s> for Element<'s> {
                                     .append(Doc::hard_line()),
                                 );
                             } else {
-                                docs.push(Doc::hard_line());
-                            }
-                        } else {
-                            docs.push(Doc::hard_line());
-                        }
-                    } else {
-                        if let Some(Node { kind: NodeKind::Text(text_node), .. }) = self.children.first() {
-                            if !text_node.raw.chars().all(|c| c.is_ascii_whitespace()) {
                                 docs.extend(reflow_raw(text_node.raw));
-                            } else {
-                                docs.push(Doc::hard_line());
                             }
-                        } else {
-                            docs.push(Doc::hard_line());
                         }
                     }
+                    true
+                } else {
+                    false
                 }
+            } else {
+                false
+            };
+            if !should_format {
+                docs.push(Doc::hard_line());
             }
         } else if tag_name.eq_ignore_ascii_case("pre") || tag_name.eq_ignore_ascii_case("textarea")
         {
