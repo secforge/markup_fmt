@@ -762,7 +762,6 @@ impl<'s> DocGen<'s> for Element<'s> {
         } else if is_vue_custom_block && !is_empty {
             if let Some(child) = self.children.first()
                 && let NodeKind::Text(text_node) = &child.kind
-                && !text_node.raw.chars().all(|c| c.is_ascii_whitespace())
             {
                 match ctx.options.vue_custom_block.get(tag_name) {
                     VueCustomBlock::None => {
