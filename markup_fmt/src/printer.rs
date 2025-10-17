@@ -469,9 +469,11 @@ impl<'s> DocGen<'s> for Element<'s> {
         let is_whitespace_sensitive = !(matches!(ctx.language, Language::Vue)
             && is_root
             && self.tag_name.eq_ignore_ascii_case("template")
-            || state.in_svg
-            || is_vue_custom_block)
+            || state.in_svg)
             && ctx.is_whitespace_sensitive(tag_name);
+        // For attribute formatting purposes, Vue custom blocks should not be treated as whitespace-sensitive
+        // to allow single attributes to stay on the same line
+        let is_whitespace_sensitive_for_attrs = is_whitespace_sensitive && !is_vue_custom_block;
         let is_empty = is_empty_element(&self.children, is_whitespace_sensitive);
 
         let mut docs = Vec::with_capacity(5);
@@ -494,7 +496,7 @@ impl<'s> DocGen<'s> for Element<'s> {
             }
             [attr]
                 if ctx.options.single_attr_same_line
-                    && !is_whitespace_sensitive
+                    && !is_whitespace_sensitive_for_attrs
                     && !is_multi_line_attr(attr) =>
             {
                 docs.push(Doc::space());
