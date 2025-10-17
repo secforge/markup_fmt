@@ -578,8 +578,10 @@ impl<'s> DocGen<'s> for Element<'s> {
                 if ctx.options.closing_bracket_same_line {
                     docs.push(attrs.append(Doc::text(">")).group());
                 } else {
-                    // for #16
-                    if is_whitespace_sensitive
+                    // Vue custom blocks should never split their opening tag
+                    if is_vue_custom_block {
+                        docs.push(attrs.append(Doc::text(">")).group());
+                    } else if is_whitespace_sensitive
                         && self.children.first().is_some_and(|child| {
                             if let NodeKind::Text(text_node) = &child.kind {
                                 !text_node.raw.starts_with(|c: char| c.is_ascii_whitespace())
@@ -595,6 +597,7 @@ impl<'s> DocGen<'s> for Element<'s> {
                             }
                         })
                     {
+                        // for #16
                         docs.push(
                             attrs
                                 .group()
