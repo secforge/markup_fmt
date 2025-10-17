@@ -461,10 +461,16 @@ impl<'s> DocGen<'s> for Element<'s> {
         } else {
             self.self_closing
         };
+        let is_vue_custom_block = matches!(ctx.language, Language::Vue)
+            && state.indent_level == 0
+            && !tag_name.eq_ignore_ascii_case("template")
+            && !tag_name.eq_ignore_ascii_case("script")
+            && !tag_name.eq_ignore_ascii_case("style");
         let is_whitespace_sensitive = !(matches!(ctx.language, Language::Vue)
             && is_root
             && self.tag_name.eq_ignore_ascii_case("template")
-            || state.in_svg)
+            || state.in_svg
+            || is_vue_custom_block)
             && ctx.is_whitespace_sensitive(tag_name);
         let is_empty = is_empty_element(&self.children, is_whitespace_sensitive);
 
@@ -740,12 +746,7 @@ impl<'s> DocGen<'s> for Element<'s> {
                     .append(Doc::hard_line()),
                 );
             }
-        } else if matches!(ctx.language, Language::Vue)
-            && state.indent_level == 0
-            && !tag_name.eq_ignore_ascii_case("template")
-            && !tag_name.eq_ignore_ascii_case("script")
-            && !tag_name.eq_ignore_ascii_case("style")
-        {
+        } else if is_vue_custom_block {
             // Handle Vue custom blocks
             // Custom blocks are parsed as raw text, so there's only one text node child
             match ctx.options.vue_custom_block {
