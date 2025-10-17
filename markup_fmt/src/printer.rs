@@ -746,27 +746,20 @@ impl<'s> DocGen<'s> for Element<'s> {
             && !tag_name.eq_ignore_ascii_case("script")
             && !tag_name.eq_ignore_ascii_case("style")
         {
-            // Handle Vue custom blocks (like <i18n>, <docs>, etc.)
+            // Handle Vue custom blocks
+            // Custom blocks are parsed as raw text, so there's only one text node child
             match ctx.options.vue_custom_block {
                 VueCustomBlock::None => {
                     // Don't format, preserve raw content (like <pre>)
-                    // Process all children to preserve everything (text, comments, etc.)
-                    let mut has_content = false;
-                    for child in &self.children {
-                        if let Node { kind: NodeKind::Text(text_node), .. } = child {
-                            if !text_node.raw.chars().all(|c| c.is_ascii_whitespace()) {
-                                docs.extend(reflow_raw(text_node.raw));
-                                has_content = true;
-                            }
+                    if let Some(Node { kind: NodeKind::Text(text_node), .. }) = self.children.first() {
+                        if !text_node.raw.chars().all(|c| c.is_ascii_whitespace()) {
+                            docs.extend(reflow_raw(text_node.raw));
                         } else {
-                            // Preserve other nodes like comments
-                            docs.push(child.kind.doc(ctx, &state));
-                            has_content = true;
+                            // Only whitespace
+                            docs.push(Doc::hard_line());
                         }
-                    }
-
-                    if !has_content {
-                        // Only whitespace - add a line break
+                    } else {
+                        // Empty or no text node
                         docs.push(Doc::hard_line());
                     }
                 }
@@ -791,64 +784,50 @@ impl<'s> DocGen<'s> for Element<'s> {
                         });
 
                     if let Some(lang) = lang_opt {
-                        // Has lang attribute - find the first non-whitespace text node to format
-                        let content_node = self.children.iter().find_map(|child| {
-                            if let Node { kind: NodeKind::Text(text_node), .. } = child {
-                                if !text_node.raw.chars().all(|c| c.is_ascii_whitespace()) {
-                                    Some(text_node)
+                        // Has lang attribute - format the text node content
+                        if let Some(Node { kind: NodeKind::Text(text_node), .. }) = self.children.first() {
+                            if !text_node.raw.chars().all(|c| c.is_ascii_whitespace()) {
+                                // Format according to the lang attribute
+                                let is_script_indent = ctx.script_indent();
+                                let formatted = if lang == "json" {
+                                    ctx.format_json(text_node.raw, text_node.start, &state)
                                 } else {
-                                    None
-                                }
+                                    ctx.format_script(text_node.raw, lang, text_node.start, &state)
+                                };
+                                let doc = if lang != "json"
+                                    && matches!(ctx.options.script_formatter, Some(ScriptFormatter::Dprint))
+                                {
+                                    Doc::hard_line().concat(reflow_owned(formatted.trim()))
+                                } else {
+                                    Doc::hard_line().concat(reflow_with_indent(formatted.trim(), true))
+                                };
+                                docs.push(
+                                    if is_script_indent {
+                                        doc.nest(ctx.indent_width)
+                                    } else {
+                                        doc
+                                    }
+                                    .append(Doc::hard_line()),
+                                );
                             } else {
-                                None
+                                // Only whitespace
+                                docs.push(Doc::hard_line());
                             }
-                        });
-
-                        if let Some(text_node) = content_node {
-                            // Format according to the lang attribute
-                            let is_script_indent = ctx.script_indent();
-                            let formatted = if lang == "json" {
-                                ctx.format_json(text_node.raw, text_node.start, &state)
-                            } else {
-                                ctx.format_script(text_node.raw, lang, text_node.start, &state)
-                            };
-                            let doc = if lang != "json"
-                                && matches!(ctx.options.script_formatter, Some(ScriptFormatter::Dprint))
-                            {
-                                Doc::hard_line().concat(reflow_owned(formatted.trim()))
-                            } else {
-                                Doc::hard_line().concat(reflow_with_indent(formatted.trim(), true))
-                            };
-                            docs.push(
-                                if is_script_indent {
-                                    doc.nest(ctx.indent_width)
-                                } else {
-                                    doc
-                                }
-                                .append(Doc::hard_line()),
-                            );
                         } else {
-                            // Only whitespace
+                            // Empty or no text node
                             docs.push(Doc::hard_line());
                         }
                     } else {
-                        // No lang attribute - preserve all content (text, comments, etc.)
-                        let mut has_content = false;
-                        for child in &self.children {
-                            if let Node { kind: NodeKind::Text(text_node), .. } = child {
-                                if !text_node.raw.chars().all(|c| c.is_ascii_whitespace()) {
-                                    docs.extend(reflow_raw(text_node.raw));
-                                    has_content = true;
-                                }
+                        // No lang attribute - preserve raw content
+                        if let Some(Node { kind: NodeKind::Text(text_node), .. }) = self.children.first() {
+                            if !text_node.raw.chars().all(|c| c.is_ascii_whitespace()) {
+                                docs.extend(reflow_raw(text_node.raw));
                             } else {
-                                // Preserve other nodes like comments
-                                docs.push(child.kind.doc(ctx, &state));
-                                has_content = true;
+                                // Only whitespace
+                                docs.push(Doc::hard_line());
                             }
-                        }
-
-                        if !has_content {
-                            // Only whitespace
+                        } else {
+                            // Empty or no text node
                             docs.push(Doc::hard_line());
                         }
                     }
