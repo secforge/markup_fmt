@@ -471,12 +471,8 @@ impl<'s> DocGen<'s> for Element<'s> {
             && self.tag_name.eq_ignore_ascii_case("template")
             || state.in_svg)
             && ctx.is_whitespace_sensitive(tag_name);
-        // For attribute formatting purposes, Vue custom blocks should not be treated as whitespace-sensitive
-        // to allow single attributes to stay on the same line
         let is_whitespace_sensitive_for_attrs = is_whitespace_sensitive && !is_vue_custom_block;
         let mut is_empty = is_empty_element(&self.children, is_whitespace_sensitive);
-        // Vue custom blocks with empty content should be treated as empty
-        // to prevent unwanted line breaks
         if is_vue_custom_block
             && matches!(
                 &self.children[..],
@@ -504,8 +500,6 @@ impl<'s> DocGen<'s> for Element<'s> {
                     docs.push(Doc::text(">"));
                     return Doc::list(docs).group();
                 }
-                // Vue custom blocks should never split their opening tag
-                // For other tags, allow line breaking for whitespace-sensitive non-empty elements
                 if is_empty || !is_whitespace_sensitive || is_vue_custom_block {
                     docs.push(Doc::text(">"));
                 } else {
@@ -767,32 +761,24 @@ impl<'s> DocGen<'s> for Element<'s> {
                 );
             }
         } else if is_vue_custom_block && !is_empty {
-            // Handle Vue custom blocks (non-empty)
-            // Empty Vue custom blocks fall through to is_empty handler to preserve empty content
-            // Custom blocks are parsed as raw text, so there's only one text node child
             match ctx.options.vue_custom_block.get(tag_name) {
                 VueCustomBlock::None => {
-                    // Don't format, preserve raw content (like <pre>)
                     if let Some(Node { kind: NodeKind::Text(text_node), .. }) = self.children.first() {
                         if !text_node.raw.chars().all(|c| c.is_ascii_whitespace()) {
                             docs.extend(reflow_raw(text_node.raw));
                         } else {
-                            // Only whitespace
                             docs.push(Doc::hard_line());
                         }
                     } else {
-                        // No text node
                         docs.push(Doc::hard_line());
                     }
                 }
                 VueCustomBlock::Squash => {
-                    // Current behaviour - format as regular content (squash whitespace)
                     for child in &self.children {
                         docs.push(child.kind.doc(ctx, &state));
                     }
                 }
                 VueCustomBlock::LangAttribute => {
-                    // Use lang attribute to determine formatting
                     let lang_opt = self
                         .attrs
                         .iter()
@@ -806,10 +792,8 @@ impl<'s> DocGen<'s> for Element<'s> {
                         });
 
                     if let Some(lang) = lang_opt {
-                        // Has lang attribute - format the text node content
                         if let Some(Node { kind: NodeKind::Text(text_node), .. }) = self.children.first() {
                             if !text_node.raw.chars().all(|c| c.is_ascii_whitespace()) {
-                                // Format according to the lang attribute
                                 let is_script_indent = ctx.script_indent();
                                 let formatted = if lang == "json" {
                                     ctx.format_json(text_node.raw, text_node.start, &state)
@@ -832,24 +816,19 @@ impl<'s> DocGen<'s> for Element<'s> {
                                     .append(Doc::hard_line()),
                                 );
                             } else {
-                                // Only whitespace
                                 docs.push(Doc::hard_line());
                             }
                         } else {
-                            // No text node
                             docs.push(Doc::hard_line());
                         }
                     } else {
-                        // No lang attribute - preserve raw content
                         if let Some(Node { kind: NodeKind::Text(text_node), .. }) = self.children.first() {
                             if !text_node.raw.chars().all(|c| c.is_ascii_whitespace()) {
                                 docs.extend(reflow_raw(text_node.raw));
                             } else {
-                                // Only whitespace
                                 docs.push(Doc::hard_line());
                             }
                         } else {
-                            // No text node
                             docs.push(Doc::hard_line());
                         }
                     }
