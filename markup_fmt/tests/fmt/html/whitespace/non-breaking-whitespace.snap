@@ -1,6 +1,5 @@
 ---
 source: markup_fmt/tests/fmt.rs
-assertion_line: 30
 ---
 <!-- normal whitespaces -->
 <span>Nihil aut odit omnis. Quam maxime est molestiae. Maxime dolorem dolores
