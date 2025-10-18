@@ -1,7 +1,7 @@
 use crate::{
     Language,
     ast::*,
-    config::{Quotes, ScriptFormatter, VSlotStyle, VueComponentCase, WhitespaceSensitivity},
+    config::{Quotes, ScriptFormatter, VSlotStyle, VueComponentCase, VueCustomBlock, WhitespaceSensitivity},
     ctx::{Ctx, Hints},
     helpers,
     state::State,
@@ -461,6 +461,11 @@ impl<'s> DocGen<'s> for Element<'s> {
         } else {
             self.self_closing
         };
+        let is_vue_custom_block = matches!(ctx.language, Language::Vue)
+            && state.indent_level == 0
+            && !tag_name.eq_ignore_ascii_case("template")
+            && !tag_name.eq_ignore_ascii_case("script")
+            && !tag_name.eq_ignore_ascii_case("style");
         let is_whitespace_sensitive = !(matches!(ctx.language, Language::Vue)
             && is_root
             && self.tag_name.eq_ignore_ascii_case("template")
@@ -483,7 +488,7 @@ impl<'s> DocGen<'s> for Element<'s> {
                     docs.push(Doc::text(">"));
                     return Doc::list(docs).group();
                 }
-                if is_empty || !is_whitespace_sensitive {
+                if is_empty || !is_whitespace_sensitive || is_vue_custom_block {
                     docs.push(Doc::text(">"));
                 } else {
                     docs.push(Doc::line_or_nil().append(Doc::text(">")).group());
@@ -491,7 +496,7 @@ impl<'s> DocGen<'s> for Element<'s> {
             }
             [attr]
                 if ctx.options.single_attr_same_line
-                    && !is_whitespace_sensitive
+                    && (!is_whitespace_sensitive || is_vue_custom_block)
                     && !is_multi_line_attr(attr) =>
             {
                 docs.push(Doc::space());
@@ -742,6 +747,58 @@ impl<'s> DocGen<'s> for Element<'s> {
                     }
                     .append(Doc::hard_line()),
                 );
+            }
+        } else if is_vue_custom_block && !is_empty {
+            let child = self.children.first().expect("non-empty Vue custom block must have children");
+            let NodeKind::Text(text_node) = &child.kind else {
+                unreachable!("Vue custom block children are always text nodes");
+            };
+            match ctx.options.vue_custom_block.get(tag_name) {
+                VueCustomBlock::None => {
+                    docs.extend(reflow_raw(text_node.raw));
+                }
+                VueCustomBlock::Squash => {
+                    docs.push(child.kind.doc(ctx, &state));
+                }
+                VueCustomBlock::LangAttribute => {
+                    let lang_opt = self
+                        .attrs
+                        .iter()
+                        .find_map(|attr| match attr {
+                            Attribute::Native(native_attribute)
+                                if native_attribute.name.eq_ignore_ascii_case("lang") =>
+                            {
+                                native_attribute.value.map(|(value, _)| value)
+                            }
+                            _ => None,
+                        });
+
+                    if let Some(lang) = lang_opt {
+                        let is_script_indent = ctx.script_indent();
+                        let formatted = if lang == "json" {
+                            ctx.format_json(text_node.raw, text_node.start, &state)
+                        } else {
+                            ctx.format_script(text_node.raw, lang, text_node.start, &state)
+                        };
+                        let doc = if lang != "json"
+                            && matches!(ctx.options.script_formatter, Some(ScriptFormatter::Dprint))
+                        {
+                            Doc::hard_line().concat(reflow_owned(formatted.trim()))
+                        } else {
+                            Doc::hard_line().concat(reflow_with_indent(formatted.trim(), true))
+                        };
+                        docs.push(
+                            if is_script_indent {
+                                doc.nest(ctx.indent_width)
+                            } else {
+                                doc
+                            }
+                            .append(Doc::hard_line()),
+                        );
+                    } else {
+                        docs.extend(reflow_raw(text_node.raw));
+                    }
+                }
             }
         } else if tag_name.eq_ignore_ascii_case("pre") || tag_name.eq_ignore_ascii_case("textarea")
         {

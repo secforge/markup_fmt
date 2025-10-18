@@ -1,0 +1,15 @@
+<template>
+  <div>Test</div>
+</template>
+
+<i18n lang="json">
+{"key":"value"}
+</i18n>
+
+<docs>
+  <p>Some    documentation</p>
+</docs>
+
+<unknown>
+  <span>Unknown    block</span>
+</unknown>
