@@ -115,7 +115,7 @@ In your configuration file, you can specify per-block rules under `vue.custom_bl
 
 ```json
 {
-  "vue.custom_block": {
+  "vue_custom_block": {
     "default": "lang-attribute",  // Optional, defaults to "lang-attribute"
     "i18n": "lang-attribute",
     "docs": "none",
@@ -124,23 +124,23 @@ In your configuration file, you can specify per-block rules under `vue.custom_bl
 }
 ```
 
-Or in TOML/dprint format (using vue.customBlock):
+Or in TOML (library format):
+
+```toml
+[vue_custom_block]
+default = "lang-attribute"  # Optional, defaults to "lang-attribute"
+i18n = "lang-attribute"
+docs = "none"
+unknown-block = "squash"
+```
+
+Or in dprint format (using vue.customBlock):
 
 ```toml
 "vue.customBlock" = "langAttribute"
 "vue.customBlock.i18n" = "langAttribute"
 "vue.customBlock.docs" = "none"
 "vue.customBlock.unknownBlock" = "squash"
-```
-
-Or using the struct format (non-dprint, requires quoted key):
-
-```toml
-["vue.custom_block"]
-default = "lang-attribute"  # Optional, defaults to "lang-attribute"
-i18n = "lang-attribute"
-docs = "none"
-unknown-block = "squash"
 ```
 
 The `default` field (or the base `vue.customBlock` key in dprint) sets the default formatting mode for all custom blocks not explicitly configured. Then, each custom block type can override this default.
@@ -187,42 +187,36 @@ This is equivalent to:
 }
 ```
 
-This works in dprint because it uses a different configuration parser. Use the `vue.customBlock` format (consistent with other vue-specific options like `vue.scriptIndent` and `vue.styleIndent`).
+**For JSON/TOML configuration files** (when using markup_fmt as a library):
 
-**For JSON/TOML configuration files** (when using markup_fmt as a library or in other contexts):
-
-**Invalid configuration** (will not work with serde):
-
-```toml
-"vue.custom_block.i18n" = "none"
-```
-
-**Valid configurations**:
-
-```toml
-# Flat key format - sets default for all blocks
-"vue.custom_block" = "lang-attribute"
-
-# Flat key format - sets default and per-block overrides
-"vue.custom_block" = "lang-attribute"
-"vue.custom_block.i18n" = "none"
-```
-
-Or using the struct format (with quoted key to avoid TOML nesting):
+Use the `vue_custom_block` key (with underscore) for the struct format:
 
 ```toml
 # The default field is optional - defaults to "lang-attribute" if omitted
-["vue.custom_block"]
+[vue_custom_block]
 i18n = "none"
 docs = "squash"
 
 # Or with explicit default
-["vue.custom_block"]
+[vue_custom_block]
 default = "lang-attribute"
 i18n = "none"
 ```
 
-This limitation in non-dprint contexts exists because the serde configuration deserialization requires the parent key to be present when using per-block overrides.
+**For dprint configuration**:
+
+Use the `vue.customBlock` key (with dot and camelCase) for the flat key format:
+
+```toml
+# Sets default for all blocks
+"vue.customBlock" = "langAttribute"
+
+# Or with per-block overrides
+"vue.customBlock" = "langAttribute"
+"vue.customBlock.i18n" = "none"
+```
+
+This works in dprint because it uses a different configuration parser that supports dotted keys.
 
 ### Case Insensitivity
 

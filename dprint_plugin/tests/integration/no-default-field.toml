@@ -1,5 +1,5 @@
 # Test that the default field is optional
 # When omitted, should default to "lang-attribute"
-["vue.custom_block"]
+[vue_custom_block]
 docs = "none"
 unknown = "squash"
