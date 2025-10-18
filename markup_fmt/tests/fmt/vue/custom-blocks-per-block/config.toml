@@ -1,6 +1,6 @@
 [default]
 
-[per-block-config."vue.custom_block"]
+[per-block-config.vue_custom_block]
 default = "lang-attribute"
 i18n = "lang-attribute"
 docs = "none"

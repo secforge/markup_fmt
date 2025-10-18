@@ -161,7 +161,7 @@ For JSON/library contexts:
 
 ```json
 {
-  "vue.custom_block": "none"
+  "vue_custom_block": "none"
 }
 ```
 
@@ -169,7 +169,7 @@ This is equivalent to:
 
 ```json
 {
-  "vue.custom_block": {
+  "vue_custom_block": {
     "default": "none"
   }
 }
@@ -228,7 +228,7 @@ Given this configuration:
 
 ```json
 {
-  "vue.custom_block": {
+  "vue_custom_block": {
     "default": "lang-attribute",
     "docs": "none",
     "metadata": "squash"
