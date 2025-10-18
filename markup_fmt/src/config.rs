@@ -407,6 +407,7 @@ pub enum VueCustomBlock {
 #[cfg_attr(feature = "config_serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "config_serde", serde(default))]
 pub struct VueCustomBlockConfig {
+    #[cfg_attr(feature = "config_serde", serde(default))]
     pub default: VueCustomBlock,
     #[cfg_attr(
         feature = "config_serde",

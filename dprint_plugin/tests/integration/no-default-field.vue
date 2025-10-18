@@ -1,16 +1,15 @@
----
-source: dprint_plugin/tests/integration.rs
----
 <template>
   <div>Test</div>
 </template>
 
 <i18n lang="json">
-{ "key": "value" }
+{"key":"value"}
 </i18n>
 
 <docs>
   <p>Some    documentation</p>
 </docs>
 
-<unknown><span>Unknown block</span></unknown>
+<unknown>
+  <span>Unknown    block</span>
+</unknown>

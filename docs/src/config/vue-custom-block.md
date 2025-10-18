@@ -116,7 +116,7 @@ In your configuration file, you can specify per-block rules under `vue.custom_bl
 ```json
 {
   "vue.custom_block": {
-    "default": "lang-attribute",
+    "default": "lang-attribute",  // Optional, defaults to "lang-attribute"
     "i18n": "lang-attribute",
     "docs": "none",
     "unknown-block": "squash"
@@ -133,11 +133,11 @@ Or in TOML/dprint format (using vue.customBlock):
 "vue.customBlock.unknownBlock" = "squash"
 ```
 
-Or using the struct format (non-dprint):
+Or using the struct format (non-dprint, requires quoted key):
 
 ```toml
-[vue.custom_block]
-default = "lang-attribute"
+["vue.custom_block"]
+default = "lang-attribute"  # Optional, defaults to "lang-attribute"
 i18n = "lang-attribute"
 docs = "none"
 unknown-block = "squash"
@@ -189,7 +189,7 @@ This is equivalent to:
 
 This works in dprint because it uses a different configuration parser. Use the `vue.customBlock` format (consistent with other vue-specific options like `vue.scriptIndent` and `vue.styleIndent`).
 
-**For JSON/TOML configuration files** (when using markup_fmt as a library or in other contexts): You **must** specify the default value when using per-block overrides.
+**For JSON/TOML configuration files** (when using markup_fmt as a library or in other contexts):
 
 **Invalid configuration** (will not work with serde):
 
@@ -200,14 +200,24 @@ This works in dprint because it uses a different configuration parser. Use the `
 **Valid configurations**:
 
 ```toml
+# Flat key format - sets default for all blocks
+"vue.custom_block" = "lang-attribute"
+
+# Flat key format - sets default and per-block overrides
 "vue.custom_block" = "lang-attribute"
 "vue.custom_block.i18n" = "none"
 ```
 
-Or using the struct format:
+Or using the struct format (with quoted key to avoid TOML nesting):
 
 ```toml
-[vue.custom_block]
+# The default field is optional - defaults to "lang-attribute" if omitted
+["vue.custom_block"]
+i18n = "none"
+docs = "squash"
+
+# Or with explicit default
+["vue.custom_block"]
 default = "lang-attribute"
 i18n = "none"
 ```
