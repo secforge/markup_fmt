@@ -471,18 +471,7 @@ impl<'s> DocGen<'s> for Element<'s> {
             && self.tag_name.eq_ignore_ascii_case("template")
             || state.in_svg)
             && ctx.is_whitespace_sensitive(tag_name);
-        let mut is_empty = is_empty_element(&self.children, is_whitespace_sensitive);
-        if is_vue_custom_block
-            && matches!(
-                &self.children[..],
-                [Node {
-                    kind: NodeKind::Text(text_node),
-                    ..
-                }] if text_node.raw.is_empty()
-            )
-        {
-            is_empty = true;
-        }
+        let is_empty = is_empty_element(&self.children, is_whitespace_sensitive);
 
         let mut docs = Vec::with_capacity(5);
 
