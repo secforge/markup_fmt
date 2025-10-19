@@ -1,0 +1,6 @@
+# Test that script indent works correctly in custom blocks with lang attribute
+scriptIndent = true
+printWidth = 80
+
+[vue_custom_block]
+default = "lang-attribute"

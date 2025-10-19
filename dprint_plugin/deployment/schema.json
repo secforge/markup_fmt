@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://plugins.dprint.dev/g-plane/markup_fmt/v0.25.3/schema.json",
+  "$id": "https://github.com/secforge/markup_fmt/releases/download/v0.25.3+sf.1+sf.1/schema.json",
   "title": "Config",
   "description": "Configuration for dprint-plugin-markup.",
   "type": "object",
@@ -385,6 +385,32 @@
       "description": "Text directive for ignoring formatting a whole file.",
       "type": "string",
       "default": "dprint-ignore-file"
+    },
+    "vue.customBlock": {
+      "description": "Control how Vue custom blocks (like `<i18n>`, `<docs>`, etc.) should be formatted. You can set a default mode for all custom blocks and override for specific block types using `vue.customBlock.{blockname}` (e.g., `vue.customBlock.i18n`).",
+      "type": "string",
+      "oneOf": [
+        {
+          "const": "lang-attribute",
+          "description": "Format based on the `lang` attribute. If the block has a `lang` attribute, it will be formatted according to that language."
+        },
+        {
+          "const": "squash",
+          "description": "Collapse all whitespace in the block content to single spaces."
+        },
+        {
+          "const": "none",
+          "description": "Preserve the raw content exactly as-is without any formatting."
+        }
+      ],
+      "default": "lang-attribute"
+    }
+  },
+  "patternProperties": {
+    "^vue\\.customBlock\\..+$": {
+      "description": "Per-block override for specific Vue custom block types. Block names are matched case-insensitively.",
+      "type": "string",
+      "enum": ["lang-attribute", "squash", "none"]
     }
   }
 }

@@ -1,15 +1,23 @@
 [package]
 name = "dprint_plugin_markup"
-version = "0.25.3"
+version = "0.25.3+sf.1"
 edition = "2024"
 authors = ["Pig Fang <g-plane@hotmail.com>"]
 description = "markup_fmt as dprint plugin."
-repository = "https://github.com/g-plane/markup_fmt"
+repository = "https://github.com/secforge/markup_fmt"
+homepage = "https://github.com/secforge/markup_fmt"
 license = "MIT"
 publish = false
 
+[package.metadata]
+dprint_update_url = "https://github.com/secforge/markup_fmt/releases/latest/download/latest.json"
+dprint_schema_url_template = "https://github.com/secforge/markup_fmt/releases/download/v{VERSION}/schema.json"
+
 [lib]
 crate-type = ["rlib", "cdylib"]
+
+[build-dependencies]
+toml = "0.9"
 
 [dependencies]
 anyhow.workspace = true
