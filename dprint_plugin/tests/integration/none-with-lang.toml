@@ -1,0 +1,3 @@
+# Test that "none" mode ignores lang attribute
+[vue_custom_block]
+docs = "none"

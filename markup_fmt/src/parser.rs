@@ -38,6 +38,7 @@ pub struct Parser<'s> {
 #[derive(Default)]
 struct ParserState {
     has_front_matter: bool,
+    element_depth: usize,
 }
 
 impl<'s> Parser<'s> {
@@ -1078,7 +1079,10 @@ impl<'s> Parser<'s> {
             && (tag_name.eq_ignore_ascii_case("script")
                 || tag_name.eq_ignore_ascii_case("style")
                 || tag_name.eq_ignore_ascii_case("pre")
-                || tag_name.eq_ignore_ascii_case("textarea"));
+                || tag_name.eq_ignore_ascii_case("textarea")
+                || (self.language == Language::Vue
+                    && self.state.element_depth == 0
+                    && !tag_name.eq_ignore_ascii_case("template")));
         if should_parse_raw {
             let text_node = self.parse_raw_text_node(tag_name)?;
             let raw = text_node.raw;
@@ -1088,6 +1092,8 @@ impl<'s> Parser<'s> {
                     raw,
                 });
             }
+        } else {
+            self.state.element_depth += 1;
         }
 
         loop {
@@ -1145,6 +1151,10 @@ impl<'s> Parser<'s> {
                     }));
                 }
             }
+        }
+
+        if !should_parse_raw {
+            self.state.element_depth -= 1;
         }
 
         Ok(Element {

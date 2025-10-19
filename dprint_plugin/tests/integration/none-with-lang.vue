@@ -1,0 +1,19 @@
+<template>
+  <div>Test none mode with lang attribute</div>
+</template>
+
+<!-- docs block with "none" mode should preserve content even with lang="html" -->
+<docs lang="html">
+  <p>This    content    should    be    preserved    exactly</p>
+  <div>
+    <span>No    formatting    should    occur</span>
+  </div>
+</docs>
+
+<!-- docs block with "none" mode and lang="json" -->
+<docs lang="json">
+{
+"key":    "value",
+  "another": "value"
+}
+</docs>

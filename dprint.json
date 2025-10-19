@@ -1,6 +1,6 @@
 {
   "plugins": [
-    "file:///source/markup_fmt/target/wasm32-unknown-unknown/release/dprint_plugin_markup.wasm",
+    "./target/wasm32-unknown-unknown/release/dprint_plugin_markup.wasm",
     "https://plugins.dprint.dev/typescript-0.95.10.wasm",
     "https://plugins.dprint.dev/json-0.20.0.wasm"
   ],

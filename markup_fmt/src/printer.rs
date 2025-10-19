@@ -1,7 +1,10 @@
 use crate::{
     Language,
     ast::*,
-    config::{Quotes, ScriptFormatter, VSlotStyle, VueComponentCase, WhitespaceSensitivity},
+    config::{
+        Quotes, ScriptFormatter, VSlotStyle, VueComponentCase, VueCustomBlock,
+        WhitespaceSensitivity,
+    },
     ctx::{Ctx, Hints},
     helpers,
     state::State,
@@ -399,6 +402,45 @@ impl<'s> DocGen<'s> for Doctype<'s> {
     }
 }
 
+impl<'s> Element<'s> {
+    /// Normalize script language based on lang attribute and type="module"
+    fn normalize_script_lang<E, F>(&self, ctx: &Ctx<'s, E, F>) -> &'s str
+    where
+        F: for<'a> FnMut(&'a str, Hints<'s>) -> Result<Cow<'a, str>, E>,
+    {
+        let lang = self
+            .attrs
+            .iter()
+            .find_map(|attr| match attr {
+                Attribute::Native(native) if native.name.eq_ignore_ascii_case("lang") => {
+                    native.value.map(|(value, _)| value)
+                }
+                _ => None,
+            })
+            .unwrap_or(if matches!(ctx.language, Language::Astro) {
+                "ts"
+            } else {
+                "js"
+            });
+
+        // Handle type="module" modifier
+        if self.attrs.iter().any(|attr| match attr {
+            Attribute::Native(native) if native.name.eq_ignore_ascii_case("type") => {
+                native.value.is_some_and(|(value, _)| value == "module")
+            }
+            _ => false,
+        }) {
+            match lang {
+                "ts" => "mts",
+                "js" => "mjs",
+                lang => lang,
+            }
+        } else {
+            lang
+        }
+    }
+}
+
 impl<'s> DocGen<'s> for Element<'s> {
     fn doc<E, F>(&self, ctx: &mut Ctx<'s, E, F>, state: &State<'s>) -> Doc<'s>
     where
@@ -461,6 +503,11 @@ impl<'s> DocGen<'s> for Element<'s> {
         } else {
             self.self_closing
         };
+        let is_vue_custom_block = matches!(ctx.language, Language::Vue)
+            && state.indent_level == 0
+            && !tag_name.eq_ignore_ascii_case("template")
+            && !tag_name.eq_ignore_ascii_case("script")
+            && !tag_name.eq_ignore_ascii_case("style");
         let is_whitespace_sensitive = !(matches!(ctx.language, Language::Vue)
             && is_root
             && self.tag_name.eq_ignore_ascii_case("template")
@@ -483,7 +530,7 @@ impl<'s> DocGen<'s> for Element<'s> {
                     docs.push(Doc::text(">"));
                     return Doc::list(docs).group();
                 }
-                if is_empty || !is_whitespace_sensitive {
+                if is_empty || !is_whitespace_sensitive || is_vue_custom_block {
                     docs.push(Doc::text(">"));
                 } else {
                     docs.push(Doc::line_or_nil().append(Doc::text(">")).group());
@@ -491,7 +538,7 @@ impl<'s> DocGen<'s> for Element<'s> {
             }
             [attr]
                 if ctx.options.single_attr_same_line
-                    && !is_whitespace_sensitive
+                    && (!is_whitespace_sensitive || is_vue_custom_block)
                     && !is_multi_line_attr(attr) =>
             {
                 docs.push(Doc::space());
@@ -660,36 +707,7 @@ impl<'s> DocGen<'s> for Element<'s> {
                     if is_script_indent {
                         state.indent_level += 1;
                     }
-                    let lang = self
-                        .attrs
-                        .iter()
-                        .find_map(|attr| match attr {
-                            Attribute::Native(native)
-                                if native.name.eq_ignore_ascii_case("lang") =>
-                            {
-                                native.value.map(|(value, _)| value)
-                            }
-                            _ => None,
-                        })
-                        .unwrap_or(if matches!(ctx.language, Language::Astro) {
-                            "ts"
-                        } else {
-                            "js"
-                        });
-                    let lang = if self.attrs.iter().any(|attr| match attr {
-                        Attribute::Native(native) if native.name.eq_ignore_ascii_case("type") => {
-                            native.value.is_some_and(|(value, _)| value == "module")
-                        }
-                        _ => false,
-                    }) {
-                        match lang {
-                            "ts" => "mts",
-                            "js" => "mjs",
-                            lang => lang,
-                        }
-                    } else {
-                        lang
-                    };
+                    let lang = self.normalize_script_lang(ctx);
                     ctx.format_script(text_node.raw, lang, text_node.start, &state)
                 };
                 let doc = if !is_json
@@ -743,50 +761,57 @@ impl<'s> DocGen<'s> for Element<'s> {
                     .append(Doc::hard_line()),
                 );
             }
-        } else if tag_name.eq_ignore_ascii_case("i18n")
-            && let [
-                Node {
-                    kind: NodeKind::Text(text_node),
-                    ..
-                },
-            ] = &self.children[..]
-        {
-            if text_node.raw.chars().all(|c| c.is_ascii_whitespace()) {
-                docs.push(Doc::hard_line());
-            } else {
-                let lang = self
-                    .attrs
-                    .iter()
-                    .find_map(|attr| match attr {
-                        Attribute::Native(native_attribute)
-                            if native_attribute.name.eq_ignore_ascii_case("lang") =>
+        } else if is_vue_custom_block && !is_empty {
+            let child = self
+                .children
+                .first()
+                .expect("non-empty Vue custom block must have children");
+            let NodeKind::Text(text_node) = &child.kind else {
+                unreachable!("Vue custom block children are always text nodes");
+            };
+            match ctx.options.vue_custom_block.get(tag_name) {
+                VueCustomBlock::None => {
+                    docs.extend(reflow_raw(text_node.raw));
+                }
+                VueCustomBlock::Squash => {
+                    docs.push(child.kind.doc(ctx, &state));
+                }
+                VueCustomBlock::LangAttribute => {
+                    // Check if there's a lang attribute to trigger formatting
+                    if self
+                        .attrs
+                        .iter()
+                        .any(|attr| matches!(attr, Attribute::Native(native) if native.name.eq_ignore_ascii_case("lang") && native.value.is_some()))
+                    {
+                        let lang = self.normalize_script_lang(ctx);
+                        let is_script_indent = ctx.script_indent();
+                        let formatted = if lang == "json" {
+                            ctx.format_json(text_node.raw, text_node.start, &state)
+                        } else {
+                            if is_script_indent {
+                                state.indent_level += 1;
+                            }
+                            ctx.format_script(text_node.raw, lang, text_node.start, &state)
+                        };
+                        let doc = if lang != "json"
+                            && matches!(ctx.options.script_formatter, Some(ScriptFormatter::Dprint))
                         {
-                            native_attribute.value.map(|(value, _)| value)
-                        }
-                        _ => None,
-                    })
-                    .unwrap_or("json");
-                let is_script_indent = ctx.script_indent();
-                let formatted = if lang == "json" {
-                    ctx.format_json(text_node.raw, text_node.start, &state)
-                } else {
-                    ctx.format_script(text_node.raw, lang, text_node.start, &state)
-                };
-                let doc = if lang == "json"
-                    && matches!(ctx.options.script_formatter, Some(ScriptFormatter::Dprint))
-                {
-                    Doc::hard_line().concat(reflow_owned(formatted.trim()))
-                } else {
-                    Doc::hard_line().concat(reflow_with_indent(formatted.trim(), true))
-                };
-                docs.push(
-                    if is_script_indent {
-                        doc.nest(ctx.indent_width)
+                            Doc::hard_line().concat(reflow_owned(formatted.trim()))
+                        } else {
+                            Doc::hard_line().concat(reflow_with_indent(formatted.trim(), true))
+                        };
+                        docs.push(
+                            if is_script_indent {
+                                doc.nest(ctx.indent_width)
+                            } else {
+                                doc
+                            }
+                            .append(Doc::hard_line()),
+                        );
                     } else {
-                        doc
+                        docs.extend(reflow_raw(text_node.raw));
                     }
-                    .append(Doc::hard_line()),
-                );
+                }
             }
         } else if tag_name.eq_ignore_ascii_case("pre") || tag_name.eq_ignore_ascii_case("textarea")
         {
