@@ -1,0 +1,3 @@
+# Test complex nested HTML with squash mode
+[vue_custom_block]
+metadata = "squash"
