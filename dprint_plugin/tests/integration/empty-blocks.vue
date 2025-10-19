@@ -1,0 +1,21 @@
+<template>
+  <div>Test empty and self-closing blocks</div>
+</template>
+
+<!-- Self-closing block with lang-attribute mode -->
+<i18n lang="json" />
+
+<!-- Empty block with lang-attribute mode -->
+<i18n lang="json"></i18n>
+
+<!-- Self-closing block with none mode -->
+<docs />
+
+<!-- Empty block with none mode -->
+<docs></docs>
+
+<!-- Self-closing block with squash mode -->
+<metadata />
+
+<!-- Empty block with squash mode -->
+<metadata></metadata>

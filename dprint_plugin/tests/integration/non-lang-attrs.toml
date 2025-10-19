@@ -1,0 +1,4 @@
+# Test custom blocks with non-lang attributes
+[vue_custom_block]
+default = "lang-attribute"
+docs = "none"

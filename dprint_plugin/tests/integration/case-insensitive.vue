@@ -1,0 +1,11 @@
+<template>
+  <div>Test</div>
+</template>
+
+<I18N lang="json">
+{"en":{"hello":"Hello","goodbye":"Goodbye","welcome":"Welcome to our application"},"de":{"hello":"Hallo","goodbye":"Auf Wiedersehen","welcome":"Willkommen in unserer Anwendung"}}
+</I18N>
+
+<DOCS>
+  <p>Some    documentation    with    extra    spaces</p>
+</DOCS>

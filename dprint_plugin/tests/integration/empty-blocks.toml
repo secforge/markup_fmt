@@ -1,0 +1,5 @@
+# Test empty and self-closing custom blocks
+[vue_custom_block]
+default = "lang-attribute"
+docs = "none"
+metadata = "squash"

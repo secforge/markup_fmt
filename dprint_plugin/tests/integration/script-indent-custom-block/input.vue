@@ -1,0 +1,12 @@
+<template>
+  <div>Test script indent in custom blocks</div>
+</template>
+
+<!-- Custom block with lang="javascript" and scriptIndent enabled -->
+<i18n lang="javascript">
+const messages = { hello: "Hello", goodbye: "Goodbye", welcome: "Welcome to our application" };
+</i18n>
+
+<script>
+const messages = { hello: "Hello", goodbye: "Goodbye", welcome: "Welcome to our application" };
+</script>

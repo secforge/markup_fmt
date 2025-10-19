@@ -25,11 +25,9 @@ impl SyncPluginHandler<FormatOptions> for MarkupFmtPluginHandler {
             name: env!("CARGO_PKG_NAME").to_string(),
             version: version.clone(),
             config_key: "markup".to_string(),
-            help_url: "https://github.com/g-plane/markup_fmt".to_string(),
-            config_schema_url: format!(
-                "https://plugins.dprint.dev/g-plane/markup_fmt/v{version}/schema.json",
-            ),
-            update_url: Some("https://plugins.dprint.dev/g-plane/markup_fmt/latest.json".into()),
+            help_url: env!("CARGO_PKG_HOMEPAGE").to_string(),
+            config_schema_url: env!("DPRINT_SCHEMA_URL_TEMPLATE").replace("{VERSION}", &version),
+            update_url: Some(env!("DPRINT_UPDATE_URL").to_string()),
         }
     }
 
@@ -144,4 +142,155 @@ pub fn build_additional_config(hints: Hints, config: &FormatOptions) -> ConfigKe
     }
 
     additional_config
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use markup_fmt::config::VueCustomBlock;
+
+    #[test]
+    fn test_resolve_config_vue_custom_block_simple() {
+        let mut handler = MarkupFmtPluginHandler;
+        let mut config = ConfigKeyMap::new();
+        config.insert("vue.customBlock".into(), "squash".into());
+
+        let global_config = GlobalConfiguration::default();
+        let result = handler.resolve_config(config, &global_config);
+
+        assert_eq!(result.diagnostics.len(), 0);
+        assert!(matches!(
+            result.config.language.vue_custom_block.get("any-block"),
+            VueCustomBlock::Squash
+        ));
+    }
+
+    #[test]
+    fn test_resolve_config_vue_custom_block_per_block() {
+        let mut handler = MarkupFmtPluginHandler;
+        let mut config = ConfigKeyMap::new();
+        config.insert("vue.customBlock".into(), "langAttribute".into());
+        config.insert("vue.customBlock.i18n".into(), "none".into());
+        config.insert("vue.customBlock.docs".into(), "squash".into());
+
+        let global_config = GlobalConfiguration::default();
+        let result = handler.resolve_config(config, &global_config);
+
+        assert_eq!(result.diagnostics.len(), 0);
+        assert!(matches!(
+            result.config.language.vue_custom_block.get("i18n"),
+            VueCustomBlock::None
+        ));
+        assert!(matches!(
+            result.config.language.vue_custom_block.get("docs"),
+            VueCustomBlock::Squash
+        ));
+        assert!(matches!(
+            result.config.language.vue_custom_block.get("unknown"),
+            VueCustomBlock::LangAttribute
+        ));
+    }
+
+    #[test]
+    fn test_resolve_config_language_specific_script_indent() {
+        let mut handler = MarkupFmtPluginHandler;
+        let mut config = ConfigKeyMap::new();
+        config.insert("scriptIndent".into(), false.into());
+        config.insert("vue.scriptIndent".into(), true.into());
+        config.insert("html.scriptIndent".into(), false.into());
+
+        let global_config = GlobalConfiguration::default();
+        let result = handler.resolve_config(config, &global_config);
+
+        assert_eq!(result.diagnostics.len(), 0);
+        assert_eq!(result.config.language.script_indent, false);
+        assert_eq!(result.config.language.vue_script_indent, Some(true));
+        assert_eq!(result.config.language.html_script_indent, Some(false));
+    }
+
+    #[test]
+    fn test_resolve_config_language_specific_style_indent() {
+        let mut handler = MarkupFmtPluginHandler;
+        let mut config = ConfigKeyMap::new();
+        config.insert("styleIndent".into(), false.into());
+        config.insert("svelte.styleIndent".into(), true.into());
+        config.insert("astro.styleIndent".into(), false.into());
+
+        let global_config = GlobalConfiguration::default();
+        let result = handler.resolve_config(config, &global_config);
+
+        assert_eq!(result.diagnostics.len(), 0);
+        assert_eq!(result.config.language.style_indent, false);
+        assert_eq!(result.config.language.svelte_style_indent, Some(true));
+        assert_eq!(result.config.language.astro_style_indent, Some(false));
+    }
+
+    #[test]
+    fn test_resolve_config_component_whitespace_sensitivity() {
+        let mut handler = MarkupFmtPluginHandler;
+        let mut config = ConfigKeyMap::new();
+        config.insert("whitespaceSensitivity".into(), "css".into());
+        config.insert("component.whitespaceSensitivity".into(), "strict".into());
+
+        let global_config = GlobalConfiguration::default();
+        let result = handler.resolve_config(config, &global_config);
+
+        assert_eq!(result.diagnostics.len(), 0);
+        assert!(
+            result
+                .config
+                .language
+                .component_whitespace_sensitivity
+                .is_some()
+        );
+    }
+
+    #[test]
+    fn test_resolve_config_invalid_vue_custom_block_value() {
+        let mut handler = MarkupFmtPluginHandler;
+        let mut config = ConfigKeyMap::new();
+        config.insert("vue.customBlock".into(), "invalid-value".into());
+
+        let global_config = GlobalConfiguration::default();
+        let result = handler.resolve_config(config, &global_config);
+
+        assert_eq!(result.diagnostics.len(), 1);
+        assert_eq!(result.diagnostics[0].property_name, "vue.customBlock");
+        assert!(
+            result.diagnostics[0]
+                .message
+                .contains("invalid value for config")
+        );
+    }
+
+    #[test]
+    fn test_resolve_config_invalid_per_block_value() {
+        let mut handler = MarkupFmtPluginHandler;
+        let mut config = ConfigKeyMap::new();
+        config.insert("vue.customBlock".into(), "langAttribute".into());
+        config.insert("vue.customBlock.i18n".into(), "invalid".into());
+
+        let global_config = GlobalConfiguration::default();
+        let result = handler.resolve_config(config, &global_config);
+
+        assert_eq!(result.diagnostics.len(), 1);
+        assert_eq!(result.diagnostics[0].property_name, "vue.customBlock.i18n");
+    }
+
+    #[test]
+    fn test_resolve_config_case_variants() {
+        let mut handler = MarkupFmtPluginHandler;
+        let mut config = ConfigKeyMap::new();
+        // Test both "langAttribute" and "lang-attribute" work
+        config.insert("vue.customBlock".into(), "langAttribute".into());
+
+        let global_config = GlobalConfiguration::default();
+        let result = handler.resolve_config(config, &global_config);
+
+        assert_eq!(result.diagnostics.len(), 0);
+        assert!(matches!(
+            result.config.language.vue_custom_block.get("any"),
+            VueCustomBlock::LangAttribute
+        ));
+    }
 }

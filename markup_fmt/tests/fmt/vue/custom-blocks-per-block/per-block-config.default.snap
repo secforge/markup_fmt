@@ -1,0 +1,27 @@
+---
+source: markup_fmt/tests/fmt.rs
+assertion_line: 23
+---
+<template>
+  <div>Hello World</div>
+</template>
+
+<script>
+export default {
+  name: "TestComponent"
+}
+</script>
+
+<i18n lang="json">
+{
+  "en": {
+    "hello": "Hello"
+  }
+}
+</i18n>
+
+<docs>
+  <p>This is documentation content.</p>  <span>It should be preserved with mode="none".</span>
+</docs>
+
+<unknown-block><div>This    should    follow    default    behavior.</div></unknown-block>

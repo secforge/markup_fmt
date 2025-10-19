@@ -1,0 +1,5 @@
+# Test whitespace-only content in custom blocks
+[vue_custom_block]
+default = "lang-attribute"
+docs = "none"
+metadata = "squash"

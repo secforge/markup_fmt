@@ -409,6 +409,53 @@ pub(crate) fn resolve_config(
                 "dprint-ignore-file".into(),
                 &mut diagnostics,
             ),
+            vue_custom_block: {
+                let default_value = get_value(
+                    &mut config,
+                    "vue.customBlock",
+                    "lang-attribute".to_string(),
+                    &mut diagnostics,
+                );
+                let default_mode = match &*default_value {
+                    "lang-attribute" | "langAttribute" => VueCustomBlock::LangAttribute,
+                    "squash" => VueCustomBlock::Squash,
+                    "none" => VueCustomBlock::None,
+                    _ => {
+                        diagnostics.push(ConfigurationDiagnostic {
+                            property_name: "vue.customBlock".into(),
+                            message: "invalid value for config `vue.customBlock`".into(),
+                        });
+                        VueCustomBlock::default()
+                    }
+                };
+                let mut vue_config = VueCustomBlockConfig::new(default_mode);
+
+                // Extract and process per-block overrides in a single pass
+                config.retain(|key, value| {
+                    if let Some(block_name) = key.strip_prefix("vue.customBlock.") {
+                        if let Some(value_str) = value.as_string() {
+                            let block_mode = match value_str.as_str() {
+                                "lang-attribute" | "langAttribute" => VueCustomBlock::LangAttribute,
+                                "squash" => VueCustomBlock::Squash,
+                                "none" => VueCustomBlock::None,
+                                _ => {
+                                    diagnostics.push(ConfigurationDiagnostic {
+                                        property_name: key.clone(),
+                                        message: format!("invalid value for config `{}`", key),
+                                    });
+                                    return false; // Remove invalid config
+                                }
+                            };
+                            vue_config.add_override(block_name.to_string(), block_mode);
+                        }
+                        false // Remove processed key
+                    } else {
+                        true // Keep non-per-block keys
+                    }
+                });
+
+                vue_config
+            },
         },
     };
 

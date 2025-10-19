@@ -1,0 +1,57 @@
+---
+source: dprint_plugin/tests/integration.rs
+---
+<template>
+  <div>{{ $t("hello") }}</div>
+</template>
+
+<script setup lang="ts">
+const props = defineProps<{ name: string }>();
+</script>
+
+<!-- Custom block with lang attribute - should format as JSON -->
+<i18n lang="json">
+{
+	"en": { "hello": "Hello" },
+	"de": { "hello": "Hallo" }
+}
+</i18n>
+
+<!-- Custom block without lang attribute - should preserve raw content -->
+<i18n>
+{
+"en":    {"hello":   "Hello"},
+  "de": {"hello":"Hallo"   }
+}
+</i18n>
+
+<!-- Custom block with HTML comment in content -->
+<i18n>
+{
+"en":    {"hello":   "Hello"}
+}
+<!-- some comment -->
+{
+  "de": {"hello":"Hallo"   }
+}
+</i18n>
+
+<!-- Custom block with blank line separator -->
+<i18n>
+{
+"en":    {"hello":   "Hello"}
+}
+
+{
+  "de": {"hello":"Hallo"   }
+}
+</i18n>
+
+<!-- Different custom block type with mixed text content -->
+<docs>
+Some documentation text.
+
+More documentation on another line.
+
+Final paragraph.
+</docs>

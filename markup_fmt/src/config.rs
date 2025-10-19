@@ -231,6 +231,17 @@ pub struct LanguageOptions {
 
     #[cfg_attr(feature = "config_serde", serde(alias = "ignoreFileCommentDirective"))]
     pub ignore_file_comment_directive: String,
+
+    #[cfg_attr(
+        feature = "config_serde",
+        serde(
+            rename = "vue_custom_block",
+            alias = "vue.customBlock",
+            alias = "vue.custom_block",
+            deserialize_with = "deserialize_vue_custom_block_config"
+        )
+    )]
+    pub vue_custom_block: VueCustomBlockConfig,
 }
 
 impl Default for LanguageOptions {
@@ -278,6 +289,7 @@ impl Default for LanguageOptions {
             script_formatter: None,
             ignore_comment_directive: "markup-fmt-ignore".into(),
             ignore_file_comment_directive: "markup-fmt-ignore-file".into(),
+            vue_custom_block: VueCustomBlockConfig::default(),
         }
     }
 }
@@ -380,4 +392,112 @@ pub enum VueComponentCase {
 pub enum ScriptFormatter {
     Dprint,
     Biome,
+}
+
+#[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "config_serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "config_serde", serde(rename_all = "kebab-case"))]
+pub enum VueCustomBlock {
+    #[default]
+    LangAttribute,
+    Squash,
+    None,
+}
+
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "config_serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "config_serde", serde(default))]
+pub struct VueCustomBlockConfig {
+    #[cfg_attr(feature = "config_serde", serde(default))]
+    pub default: VueCustomBlock,
+    #[cfg_attr(
+        feature = "config_serde",
+        serde(
+            flatten,
+            deserialize_with = "deserialize_lowercase_map",
+            serialize_with = "serialize_lowercase_map"
+        )
+    )]
+    overrides: std::collections::HashMap<String, VueCustomBlock>,
+}
+
+impl Default for VueCustomBlockConfig {
+    fn default() -> Self {
+        Self {
+            default: VueCustomBlock::default(),
+            overrides: std::collections::HashMap::new(),
+        }
+    }
+}
+
+impl VueCustomBlockConfig {
+    pub fn new(default: VueCustomBlock) -> Self {
+        Self {
+            default,
+            overrides: std::collections::HashMap::new(),
+        }
+    }
+    pub fn get(&self, tag_name: &str) -> &VueCustomBlock {
+        // Avoid allocation if tag_name is already lowercase
+        if tag_name.chars().all(|c| !c.is_ascii_uppercase()) {
+            self.overrides.get(tag_name).unwrap_or(&self.default)
+        } else {
+            self.overrides
+                .get(&tag_name.to_ascii_lowercase())
+                .unwrap_or(&self.default)
+        }
+    }
+    pub fn add_override(&mut self, block_name: String, mode: VueCustomBlock) {
+        self.overrides.insert(block_name.to_ascii_lowercase(), mode);
+    }
+}
+
+#[cfg(feature = "config_serde")]
+fn deserialize_lowercase_map<'de, D>(
+    deserializer: D,
+) -> Result<std::collections::HashMap<String, VueCustomBlock>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::Deserialize;
+    let map = std::collections::HashMap::<String, VueCustomBlock>::deserialize(deserializer)?;
+    Ok(map
+        .into_iter()
+        .filter(|(k, _)| !k.eq_ignore_ascii_case("default")) // Filter out "default" key to avoid duplication
+        .map(|(k, v)| (k.to_ascii_lowercase(), v))
+        .collect())
+}
+
+#[cfg(feature = "config_serde")]
+fn serialize_lowercase_map<S>(
+    map: &std::collections::HashMap<String, VueCustomBlock>,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    use serde::Serialize;
+    map.serialize(serializer)
+}
+
+#[cfg(feature = "config_serde")]
+fn deserialize_vue_custom_block_config<'de, D>(
+    deserializer: D,
+) -> Result<VueCustomBlockConfig, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::Deserialize;
+
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum StringOrStruct {
+        String(VueCustomBlock),
+        Struct(VueCustomBlockConfig),
+    }
+
+    match StringOrStruct::deserialize(deserializer)? {
+        StringOrStruct::String(default) => Ok(VueCustomBlockConfig::new(default)),
+        StringOrStruct::Struct(config) => Ok(config),
+    }
 }
