@@ -1,0 +1,30 @@
+---
+source: dprint_plugin/tests/integration.rs
+assertion_line: 218
+---
+<template>
+  <div>Test custom blocks with non-lang attributes</div>
+</template>
+
+<!-- i18n block with locale attribute -->
+<i18n locale="en" lang="json">
+{ "hello": "Hello", "goodbye": "Goodbye" }
+</i18n>
+
+<!-- i18n block with multiple attributes -->
+<i18n lang="json" src="./messages.json" global>
+{ "key": "value" }
+</i18n>
+
+<!-- docs block with src attribute -->
+<docs src="./readme.md">
+  <p>Fallback    content</p>
+</docs>
+
+<!-- Custom block with custom attributes -->
+<metadata
+  name="component-meta"
+  version="1.0"
+>
+  <div>Metadata    content</div>
+</metadata>

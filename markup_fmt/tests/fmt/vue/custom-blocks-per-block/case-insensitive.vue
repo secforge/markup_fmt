@@ -1,0 +1,11 @@
+<template>
+  <div>Test</div>
+</template>
+
+<I18N lang="json">
+{"key": "value"}
+</I18N>
+
+<DOCS><p>Mixed    case    test</p></DOCS>
+
+<Unknown-Block><span>Should    also    work</span></Unknown-Block>
