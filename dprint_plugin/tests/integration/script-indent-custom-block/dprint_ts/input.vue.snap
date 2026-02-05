@@ -1,6 +1,5 @@
 ---
 source: dprint_plugin/tests/integration.rs
-assertion_line: 123
 ---
 <template>
   <div>Test script indent in custom blocks</div>
@@ -8,11 +7,7 @@ assertion_line: 123
 
 <!-- Custom block with lang="javascript" and scriptIndent enabled -->
 <i18n lang="javascript">
-  const messages = {
-    hello: "Hello",
-    goodbye: "Goodbye",
-    welcome: "Welcome to our application",
-  };
+  const messages = { hello: "Hello", goodbye: "Goodbye", welcome: "Welcome to our application" };
 </i18n>
 
 <script>
